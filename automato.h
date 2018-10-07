@@ -6,7 +6,9 @@
 typedef struct automato* Automato;
 
 Automato carrega_automato(char *caminho);
-int carrega_estados(Automato *a, char *estados);
-int carrega_alfabeto(Automato *a, char *alfabet);
+void carrega_estados(Automato *a, char *estados);
+void carrega_alfabeto(Automato *a, char *alfabeto);
+//int carrega_inicial(Automato *a, char *inicial);
+int carrega_final(Automato *a, char *final);
 
 #endif //
