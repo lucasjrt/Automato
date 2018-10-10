@@ -13,7 +13,7 @@ struct automato {
     int num_estados;
     char alfabeto[36];
     struct delta funcoes[100];
-    char estado_inicial;
+    char estado_inicial[15];
     char estado_final[30][15];
     int num_final;
 };
@@ -32,15 +32,12 @@ Automato carrega_automato(char* caminho) {
         int i;
         for(i = 0; i < a->num_estados; i++) {
             int j = 0;
-            while(a->estados[i][j] != '\0') {
-                printf("%c", a->estados[i][j]);
-                j++;
-            }
-            if(i < a->num_estados - 1) printf(", ");
+            printf("%s%s", a->estados[i], (i < strlen(a->alfabeto) - 1 ? ", ":""));
         }
-        printf("\n\n");
-    } else {
-        printf("Os estados do automato nao puderam ser carregados\n");
+        printf("\n");
+    }
+    else {
+        printf("Os estados do automato nao puderam ser carregados do arquivo\n");
         return NULL;
     }
     //Carrega o alfabeto do autômato
@@ -53,18 +50,34 @@ Automato carrega_automato(char* caminho) {
         for(i = 0; i < strlen(a->alfabeto); i++) {
             printf("%c%s", a->alfabeto[i], (i < strlen(a->alfabeto) - 1 ? ",":""));
         }
-        printf("\n\n");
-    } else {
-        printf("Nao foi possivel encontrar o alfabeto do automato\n");
+        printf("\n");
+    }
+    else {
+        printf("Nao foi possivel encontrar o alfabeto do automato no arquivo\n");
         return NULL;
     }
     fscanf(f, "%s", temp); //Lê "delta"
+    if(!strcmp(temp, "delta")) {
+
+    }
+    else {
+        printf("Nao foi possivel encontrar as funcoes delta no arquivo\n");
+    }
     //Carrega as funcoes delta do automato
     fscanf(f, "%s", temp); //Lê as funções delta
 
     fscanf(f, "%s", temp); // Lê "inicial"
-    //Carrega o estado inicial do automato
-    fscanf(f, "%s", temp); // Lê os estados iniciais
+    if(!strcmp(temp, "inicial")) {
+        //Carrega o estado inicial do automato
+        fscanf(f, "%s", temp); // Lê os estados iniciais
+        if(!carrega_inicial(&a, temp))
+            return NULL;
+        printf("Estado inicial carregado:\n%s\n", a->estado_inicial);
+    }
+    else {
+        printf("Nao foi possivel encontrar o estado inicial do automato no arquivo\n");
+        return NULL;
+    }
 
     fscanf(f, "%s", temp); // Lê "final"
     //Carrega o estado final do Automato
@@ -76,15 +89,12 @@ Automato carrega_automato(char* caminho) {
         int i;
         for(i = 0; i < a->num_final; i++) {
             int j = 0;
-            while(a->estado_final[i][j] != '\0') {
-                printf("%c", a->estado_final[i][j], a->estado_final[i][j]);
-                j++;
-            }
-            if(i < a->num_final - 1) printf(", ");
+            printf("%s%s", a->estado_final[i], (i < strlen(a->alfabeto) - 1 ? ", ":""));
         }
         printf("\n");
-    } else {
-        printf("Nao foi possivel encontrar o estado inicial do automato\n");
+    }
+    else {
+        printf("Nao foi possivel encontrar o estado final do automato\n");
         return NULL;
     }
     return a;
@@ -117,6 +127,38 @@ void carrega_alfabeto(Automato *a, char *alfabeto) {
             j++;
         }
     }
+}
+
+int carrega_inicial(Automato *a, char *inicial) {
+    int i, j;
+    for(i = 0; i < (*a)->num_estados; i++) { //Verifica se a palavra existe nos estados do automato
+        j = 0;
+        while((*a)->estados[i][j] != '\0' && inicial[j] != '\0') { //Equanto a palavra não acabar
+            if(inicial[j+1] == ',') {
+                printf("So e permitido um estado inicial para o automato\n");
+                return 0;
+            }
+            if((*a)->estados[i][j] != inicial[j])
+                break;
+            if(inicial[j+1] != '\0')
+                j++;
+            else {
+                int n;
+                for(n = 0; n < strlen(inicial); n++) {
+                    (*a)->estado_inicial[n] = inicial[n];
+                }
+                j++;
+                break;
+            }
+        }
+        if(j >= strlen(inicial))
+            break;
+    }
+    if(!strlen((*a)->estado_inicial)) {
+        printf("Nenhum estado inicial foi encontrado\n");
+        return 0;
+    }
+    return 1;
 }
 
 //Retorna 1 se sucesso, 0 se erro
