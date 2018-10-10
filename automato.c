@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "automato.h"
+#define COLOR_RED     "\x1b[31m"
+#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_RESET   "\x1b[0m"
 
 struct delta {
-    int estado1;
+    char estado1[15];
     char transicao;
-    int estado2;
+    char estado2[15];
 };
 
 struct automato {
@@ -13,6 +16,7 @@ struct automato {
     int num_estados;
     char alfabeto[36];
     struct delta funcoes[100];
+    int num_funcoes;
     char estado_inicial[15];
     char estado_final[30][15];
     int num_final;
@@ -28,16 +32,16 @@ Automato carrega_automato(char* caminho) {
     if(!strcmp(temp, "estados")) {
         fscanf(f, "%s", temp); //Lê os estados
         carrega_estados(&a, temp);
-        printf("%d estados carregados: \n", a->num_estados);
+        printf(COLOR_GREEN "%d estados carregados: \n" COLOR_RESET, a->num_estados);
         int i;
         for(i = 0; i < a->num_estados; i++) {
             int j = 0;
-            printf("%s%s", a->estados[i], (i < strlen(a->alfabeto) - 1 ? ", ":""));
+            printf("%s%s", a->estados[i], (i < a->num_estados - 1 ? ", ":""));
         }
         printf("\n");
     }
     else {
-        printf("Os estados do automato nao puderam ser carregados do arquivo\n");
+        printf(COLOR_RED "Os estados do automato nao puderam ser carregados do arquivo\n" COLOR_GREEN);
         return NULL;
     }
     //Carrega o alfabeto do autômato
@@ -45,7 +49,7 @@ Automato carrega_automato(char* caminho) {
     if(!strcmp(temp, "alfabeto")) {
         fscanf(f, "%s", temp); //Lê o alfabeto
         carrega_alfabeto(&a, temp);
-        printf("Alfabeto carregado:\n");
+        printf(COLOR_GREEN "Alfabeto carregado:\n" COLOR_RESET);
         int i;
         for(i = 0; i < strlen(a->alfabeto); i++) {
             printf("%c%s", a->alfabeto[i], (i < strlen(a->alfabeto) - 1 ? ",":""));
@@ -53,39 +57,46 @@ Automato carrega_automato(char* caminho) {
         printf("\n");
     }
     else {
-        printf("Nao foi possivel encontrar o alfabeto do automato no arquivo\n");
+        printf(COLOR_RED "Nao foi possivel encontrar o alfabeto do automato no arquivo\n" COLOR_RESET);
         return NULL;
     }
     fscanf(f, "%s", temp); //Lê "delta"
+    //Carrega as funcoes delta do automato
     if(!strcmp(temp, "delta")) {
-
+        fscanf(f, "%s", temp); //Lê as funções delta
+        if(!carrega_delta(&a, temp)) {
+            printf(COLOR_RED "Erro na leitura das funcoes do automato\n" COLOR_RESET);
+            return NULL;
+        }
+        printf(COLOR_GREEN "%d funcoes carregadas:\n" COLOR_RESET, a->num_funcoes);
+        int i;
+        for(i = 0; i < a->num_funcoes; i++) {
+            printf("(%s,%c,%s)\n", a->funcoes[i].estado1, a->funcoes[i].transicao, a->funcoes[i].estado2);
+        }
     }
     else {
-        printf("Nao foi possivel encontrar as funcoes delta no arquivo\n");
+        printf(COLOR_RED "Nao foi possivel encontrar as funcoes delta no arquivo\n" COLOR_RESET);
+        return NULL;
     }
-    //Carrega as funcoes delta do automato
-    fscanf(f, "%s", temp); //Lê as funções delta
-
     fscanf(f, "%s", temp); // Lê "inicial"
+    //Carrega o estado inicial do automato
     if(!strcmp(temp, "inicial")) {
-        //Carrega o estado inicial do automato
         fscanf(f, "%s", temp); // Lê os estados iniciais
         if(!carrega_inicial(&a, temp))
             return NULL;
-        printf("Estado inicial carregado:\n%s\n", a->estado_inicial);
+        printf(COLOR_GREEN "Estado inicial carregado:\n" COLOR_RESET "%s\n", a->estado_inicial);
     }
     else {
-        printf("Nao foi possivel encontrar o estado inicial do automato no arquivo\n");
+        printf(COLOR_RED "Nao foi possivel encontrar o estado inicial do automato no arquivo\n" COLOR_RESET);
         return NULL;
     }
-
     fscanf(f, "%s", temp); // Lê "final"
-    //Carrega o estado final do Automato
+    //Carrega os estados final do Automato
     if(!strcmp(temp, "final")) {
         fscanf(f, "%s", temp); //Lê os estados finais
         if(!carrega_final(&a, temp))
             return NULL;
-        printf("Estados finais carregados:\n");
+        printf(COLOR_GREEN "%d estados finais carregados:\n" COLOR_RESET, a->num_final);
         int i;
         for(i = 0; i < a->num_final; i++) {
             int j = 0;
@@ -94,7 +105,7 @@ Automato carrega_automato(char* caminho) {
         printf("\n");
     }
     else {
-        printf("Nao foi possivel encontrar o estado final do automato\n");
+        printf(COLOR_RED "Nao foi possivel encontrar o estado final do automato\n" COLOR_RESET);
         return NULL;
     }
     return a;
@@ -129,13 +140,81 @@ void carrega_alfabeto(Automato *a, char *alfabeto) {
     }
 }
 
+//Retorna 1 se sucesso, 0 se erro
+int carrega_delta(Automato *a, char *delta) {
+    if(delta[0] != '{') {
+        printf(COLOR_RED "As funcoes devem estar entre chaves, no seguinte formato: {([estado origem],[caractere do alfabeto],[estado destino]),([estado origem],[caractere do alfabeto],[estado destino]),...}. Note que nao se usa espaco entre cada funcao\n" COLOR_RESET);
+        return 0;
+    }
+    int j = 1, k, n = 0;
+    //j: percorre delta
+    //k: percorre o vetor temp
+    while(delta[j] != '\0') { //Percorre todo o vetor delta
+        if(delta[j] == '(') {
+            while(delta[j] != ')') { //Percorre cada tupla
+                if(delta[j] != '(') {
+                    printf(COLOR_RED "Formato invalido das funcoes no arquivo\n" COLOR_RESET);
+                    return 0;
+                }
+                else
+                    j++;
+                char temp[15];
+                k = 0;
+                while(delta[j] != ',') {
+                    temp[k] = delta[j];
+                    j++;
+                    k++;
+                }
+                if(!pertence_estado(*a, temp)) {
+                    printf(COLOR_RED "Estado 1: O estado %s nao pertence ao automato\n" COLOR_RESET);
+                    return 0;
+                }
+                atribui((*a)->funcoes[n].estado1, temp);
+                j++;
+                if(!pertence_alfabeto(*a, delta[j])) {
+                    printf(COLOR_RED "O simbolo de transicao deve fazer parte do alfabeto do automato, \"%c\" nao pertence ao alfabeto\n" COLOR_RESET, delta[j]);
+                    return 0;
+                }
+                (*a)->funcoes[n].transicao = delta[j];
+                if(delta[j+1] != ',') {
+                    printf(COLOR_RED "O simbolo de transicao deve ser apenas um caractere\n" COLOR_RESET);
+                    return 0;
+                }
+                j+=2;
+                k = 0;
+                while(delta[j] != ')') {
+                    temp[k] = delta[j];
+                    j++;
+                    k++;
+                }
+                if(!pertence_estado(*a, temp)) {
+                    printf(COLOR_RED "Estado 2: O estado %s nao pertence ao automato\n" COLOR_RESET);
+                    return 0;
+                }
+                atribui((*a)->funcoes[n].estado2, temp);
+                n++;
+            }
+        }
+        else {
+            j++;
+        }
+    }
+    if(delta[j-1] != '}') {
+        printf(COLOR_RED "As funcoes devem estar entre chaves no arquivo\n" COLOR_RESET);
+        return 0;
+    }
+    (*a)->num_funcoes = n;
+    return 1;
+}
+
+//Retorna 1 se sucesso, 0 se erro
 int carrega_inicial(Automato *a, char *inicial) {
     int i, j;
     for(i = 0; i < (*a)->num_estados; i++) { //Verifica se a palavra existe nos estados do automato
         j = 0;
         while((*a)->estados[i][j] != '\0' && inicial[j] != '\0') { //Equanto a palavra não acabar
             if(inicial[j+1] == ',') {
-                printf("So e permitido um estado inicial para o automato\n");
+                printf(COLOR_RED "So e permitido um estado inicial para o automato\n" COLOR_RESET);
                 return 0;
             }
             if((*a)->estados[i][j] != inicial[j])
@@ -155,7 +234,7 @@ int carrega_inicial(Automato *a, char *inicial) {
             break;
     }
     if(!strlen((*a)->estado_inicial)) {
-        printf("Nenhum estado inicial foi encontrado\n");
+        printf(COLOR_RED "Nenhum estado inicial foi encontrado\n" COLOR_RESET);
         return 0;
     }
     return 1;
@@ -181,7 +260,7 @@ int carrega_final(Automato *a, char *final) {
                     i++;
                 }
                     else { //Se os estados tiverem acabado, retorna erro
-                    printf("Estado final invalido encontrado\n");
+                    printf(COLOR_RED "Estado final invalido encontrado\n" COLOR_RESET);
                     return 0;
                 }
             }
@@ -200,4 +279,41 @@ int carrega_final(Automato *a, char *final) {
     }
     (*a)->num_final = k;
     return 1;
+}
+
+//Verifica se o estado pertence ao automato
+int pertence_estado(Automato a, char *estado) {
+    int i, j;
+    for(i = 0; i < a->num_estados; i++) {
+        j = 0;
+        // printf("Verificando se %s == %s", )
+        // while(a->estados[i][j] != '\0' && estado[j] != '\0') {
+        //     if(a->estados[i][j] != estado[j])
+        //         break;
+        //     if(estado[j+1] == '\0')
+        //         return 1;
+        //     j++;
+        // }
+        if(!strcmp(a->estados[i], estado))
+            return 1;
+    }
+    return 0;
+}
+
+int pertence_alfabeto(Automato a, char simbolo) {
+    int i;
+    for(i = 0; i < strlen(a->alfabeto); i++) {
+        if(a->alfabeto[i] == simbolo)
+            return 1;
+    }
+    return 0;
+}
+
+//Atribui o valor de b em a
+void atribui(char *a, char *b) {
+    int i;
+    for(i = 0; i < strlen(b); i++) {
+        a[i] = b[i];
+        a[i+1] = '\0';
+    }
 }
