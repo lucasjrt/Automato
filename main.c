@@ -7,5 +7,9 @@
 #include "automato.h"
 
 int main() {
+    char cadeia[100];
     Automato a = carrega_automato("Automato.dat");
+    // printf("Digite a cadeia para verificar se o automato a reconhece: ");
+    // scanf("%s", cadeia);
+    //le_sequencia(a, cadeia);
 }

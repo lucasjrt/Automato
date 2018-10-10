@@ -35,7 +35,6 @@ Automato carrega_automato(char* caminho) {
         printf(COLOR_GREEN "%d estados carregados: \n" COLOR_RESET, a->num_estados);
         int i;
         for(i = 0; i < a->num_estados; i++) {
-            int j = 0;
             printf("%s%s", a->estados[i], (i < a->num_estados - 1 ? ", ":""));
         }
         printf("\n");
@@ -48,7 +47,10 @@ Automato carrega_automato(char* caminho) {
     fscanf(f, "%s", temp); //Lê "alfabeto"
     if(!strcmp(temp, "alfabeto")) {
         fscanf(f, "%s", temp); //Lê o alfabeto
-        carrega_alfabeto(&a, temp);
+        if(!carrega_alfabeto(&a, temp)) {
+            printf(COLOR_RED "Houve um erro ao carregar o alfabeto do automato\n" COLOR_RESET);
+            return NULL;
+        }
         printf(COLOR_GREEN "Alfabeto carregado:\n" COLOR_RESET);
         int i;
         for(i = 0; i < strlen(a->alfabeto); i++) {
@@ -99,8 +101,7 @@ Automato carrega_automato(char* caminho) {
         printf(COLOR_GREEN "%d estados finais carregados:\n" COLOR_RESET, a->num_final);
         int i;
         for(i = 0; i < a->num_final; i++) {
-            int j = 0;
-            printf("%s%s", a->estado_final[i], (i < strlen(a->alfabeto) - 1 ? ", ":""));
+            printf("%s%s", a->estado_final[i], (i < a->num_final - 1 ? ", ":""));
         }
         printf("\n");
     }
@@ -130,11 +131,15 @@ void carrega_estados(Automato *a, char *estados) {
     (*a)->num_estados = j;
 }
 
-void carrega_alfabeto(Automato *a, char *alfabeto) {
+int carrega_alfabeto(Automato *a, char *alfabeto) {
     int i, j = 0;
     for(i = 0; i <= strlen(alfabeto); i++) {
         if(alfabeto[i] != ',' && alfabeto[i] != '\0') {
             (*a)->alfabeto[j] = alfabeto[i];
+            if(alfabeto[i+1] != ',' && alfabeto[i+1] != '\0') {
+                printf(COLOR_RED "O alfabeto do automato deve ser apenas de caracteres individuais, separados por virgula\n" COLOR_RESET);
+                return 0;
+            }
             j++;
         }
     }
@@ -286,14 +291,6 @@ int pertence_estado(Automato a, char *estado) {
     int i, j;
     for(i = 0; i < a->num_estados; i++) {
         j = 0;
-        // printf("Verificando se %s == %s", )
-        // while(a->estados[i][j] != '\0' && estado[j] != '\0') {
-        //     if(a->estados[i][j] != estado[j])
-        //         break;
-        //     if(estado[j+1] == '\0')
-        //         return 1;
-        //     j++;
-        // }
         if(!strcmp(a->estados[i], estado))
             return 1;
     }
