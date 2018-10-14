@@ -3,6 +3,25 @@
 #include <stdio.h>
 #include "automato.h"
 
+struct delta {
+    char estado1[15];
+    char transicao;
+    char estado2[15];
+};
+
+struct automato {
+    char estados[30][15]; //Possível armazenar 30 estados com 15 digitos
+    int num_estados;
+    char alfabeto[36];
+    struct delta funcoes[100];
+    //int qtd_funcoes; ///ADICIONADO (A necessidade ainda nao foi comprovavada)
+    int num_funcoes;
+    char estado_inicial[15];
+    char estado_final[30][15];
+    int num_final;
+};
+
+
 typedef struct automato* Automato;
 
 Automato carrega_automato(char *caminho);
@@ -14,5 +33,10 @@ int carrega_final(Automato *a, char *final);
 int pertence_estado(Automato a, char *estado);
 int pertence_alfabeto(Automato a, char simbolo);
 void atribui(char *a, char *b);
+
+
+
+
+int ja_existe(char caractere,char *vetor,int tam);
 
 #endif //

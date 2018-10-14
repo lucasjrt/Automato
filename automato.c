@@ -1,26 +1,111 @@
 #include <stdlib.h>
 #include <string.h>
 #include "automato.h"
-#define COLOR_RED     "\x1b[31m"
-#define COLOR_GREEN   "\x1b[32m"
-#define COLOR_RESET   "\x1b[0m"
+#define COLOR_RED     ""
+#define COLOR_GREEN   ""
+#define COLOR_RESET   ""
 
-struct delta {
-    char estado1[15];
-    char transicao;
-    char estado2[15];
-};
 
-struct automato {
-    char estados[30][15]; //Possível armazenar 30 estados com 15 digitos
-    int num_estados;
-    char alfabeto[36];
-    struct delta funcoes[100];
-    int num_funcoes;
-    char estado_inicial[15];
-    char estado_final[30][15];
-    int num_final;
-};
+char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos){ //Aplica uma funcao de transicao dado um simbolo e um estado, retornando a quatidade de estados destinos, e os estados destinos pelo parametro
+    int i,j=0;*qtd_destinos=0;
+    char **destinos;
+    destinos = (int**)malloc(sizeof(int*)*30);
+    for(int i=0;i<30;i++){
+        destinos[i] = (int*)malloc(sizeof(int)*15);
+    }
+    for(i=0;i<a->num_funcoes;i++){
+        if((strcmp(estado,a->funcoes[i].estado1)==0)&&simbolo==a->funcoes[i].transicao){
+            (*qtd_destinos)++;
+            strcpy(destinos[j],a->funcoes[i].estado2);
+            j++;
+        }
+    }
+    return destinos;
+}
+int reconhece(Automato a,char *sequencia,char *estado_atual){
+    printf("Recebeu a sequencia %s\n",sequencia);
+    printf("Esta no estado %s\n",estado_atual);
+    char simbolos_aceitos[36];
+    int i, qtd_destinos=0,j=0;
+    char **estados_destinos;
+    if(sequencia[0]=='\0'){
+        printf("ACABOU A SEQUENCIA\n");
+        if(eh_estado_final(a,estado_atual))return 1;
+        else{
+            retorna_simbolos(a,estado_atual,&simbolos_aceitos);
+            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){printf("Voltando\n");return 0;}
+        }
+    }
+    retorna_simbolos(a,estado_atual,&simbolos_aceitos);
+    printf("Simbolos aceitos pelo estado %s: %s\n",estado_atual,simbolos_aceitos);
+    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){printf("Voltando\n");return 0;} //Se o caractere lido for invalido e simbolos aceitos no estado nao estiver contido o E-fecho entao retorna
+    for(i=0;i<strlen(simbolos_aceitos);i++){
+        j=0;
+        if(simbolos_aceitos[i]==sequencia[0]&& sequencia[0]!='\0'){
+            estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,sequencia[0],&qtd_destinos);
+            printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,sequencia[0],estado_atual);
+            do{ //Faz interpretar todas as funcoes com a mesma transicao para estados diferentes
+                printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],sequencia[0],estado_atual);
+                if(reconhece(a,(sequencia+1),estados_destinos[j])==1)return 1;
+                j++;
+            }while(j<qtd_destinos);
+        }
+        else{
+            j=0;
+            if(simbolos_aceitos[i]=='&'){
+                printf("&&&&&&&&&&&&&&\n");
+                estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,'&',&qtd_destinos);
+                printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,'&',estado_atual);
+                do{
+                    printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],'&',estado_atual);
+                    printf("Mandando a sequencia %s\n",sequencia);
+                    if(reconhece(a,sequencia,estados_destinos[j])==1)return 1;
+                    j++;
+                }while(j<qtd_destinos);
+            }
+        }
+    }
+    printf("Retornando final\n");
+    return 0;
+}
+
+int eh_estado_final(Automato a,char *estado_atual){//Dado um estado esta funcao retorna se este estado eh final
+    int i;
+    for(i=0;i<a->num_final;i++){
+        if(strcmp(a->estado_final[0],estado_atual)==0)return 1;
+    }
+    return 0;
+}
+
+int ja_existe(char caractere,char *vetor,int tam){
+    int i;
+    for(i=0;i<tam;i++){
+        if(vetor[i]==caractere)return 1;
+    }
+    return 0;
+}
+
+void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){ //Retorna um array dos simbolos que podem ser recebidos a partir deste estado
+    int i,j=0;
+    simbolos_possiveis[0] = '\0';
+    for(i=0;i<a->num_funcoes;i++){
+        if(strcmp(a->funcoes[i].estado1, estado)==0){
+            if(ja_existe(a->funcoes[i].transicao,simbolos_possiveis,j)==0){
+                simbolos_possiveis[j] =  a->funcoes[i].transicao;
+                j++;
+            }
+        }
+    }
+    simbolos_possiveis[j] = '\0';
+}
+
+
+
+
+
+
+
+
 
 //Retorna um ponteiro pro autômato, ou NULL caso acontença algum erro.
 Automato carrega_automato(char* caminho) {
@@ -66,6 +151,7 @@ Automato carrega_automato(char* caminho) {
     //Carrega as funcoes delta do automato
     if(!strcmp(temp, "delta")) {
         fscanf(f, "%s", temp); //Lê as funções delta
+        printf("Temp!!: %s", temp);
         if(!carrega_delta(&a, temp)) {
             printf(COLOR_RED "Erro na leitura das funcoes do automato\n" COLOR_RESET);
             return NULL;
@@ -171,7 +257,8 @@ int carrega_delta(Automato *a, char *delta) {
                     k++;
                 }
                 if(!pertence_estado(*a, temp)) {
-                    printf(COLOR_RED "Estado 1: O estado %s nao pertence ao automato\n" COLOR_RESET);
+                    printf("Temp: %s\n", temp);
+                    printf(COLOR_RED "Estado 1: O estado %s nao pertence ao automato\n" COLOR_RESET, temp);
                     return 0;
                 }
                 atribui((*a)->funcoes[n].estado1, temp);
@@ -193,7 +280,7 @@ int carrega_delta(Automato *a, char *delta) {
                     k++;
                 }
                 if(!pertence_estado(*a, temp)) {
-                    printf(COLOR_RED "Estado 2: O estado %s nao pertence ao automato\n" COLOR_RESET);
+                    printf(COLOR_RED "Estado 2: O estado %s nao pertence ao automato\n" COLOR_RESET, temp);
                     return 0;
                 }
                 atribui((*a)->funcoes[n].estado2, temp);
@@ -314,3 +401,4 @@ void atribui(char *a, char *b) {
         a[i+1] = '\0';
     }
 }
+
