@@ -18,10 +18,9 @@ int main() {
     }
 
     Automato a = carrega_automato("Automato.dat");
-    printf("Digite a cadeia para verificar se o automato a reconhece: ");
-    scanf("%s", cadeia);
-    le_sequencia(a, cadeia);
-//    Automato a = malloc(sizeof(struct automato));
+    //printf("Digite a cadeia para verificar se o automato a reconhece: ");
+    //scanf("%s", cadeia);
+    //le_sequencia(a, cadeia);
     a->estados[0][0] = '1'; a->estados[0][1] = '\0';
     a->estados[1][0] = '2'; a->estados[1][1] = '\0';
     a->estados[2][0] = '3'; a->estados[2][1] = '\0';
