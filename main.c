@@ -4,11 +4,11 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include "automato.h"
 
 int main() {
-    char cadeia[300],repete='s';
+    char cadeia[200],repete='s';
     int reconheceu;
     Automato a = carrega_automato("Automato05.dat");
     while(repete=='s'){

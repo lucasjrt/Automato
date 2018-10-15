@@ -15,10 +15,10 @@ struct delta {
 };
 
 struct automato {
-    char estados[30][15]; //Possível armazenar 30 estados com 15 digitos
+    char estados[30][15];
     int num_estados;
     char alfabeto[36];
-    struct delta funcoes[200];
+    struct delta funcoes[100];
     int num_funcoes;
     char estado_inicial[15];
     char estado_final[30][15];
@@ -27,56 +27,43 @@ struct automato {
 
 ///Retorna se a cadeia eh aceita pelo automato
 int reconhece(Automato a,char *sequencia){
-    if(strcmp("E",sequencia)==0){ ///Caso o usuario digite "E", sera interpretado que ele digitou nada, ou seja, cadeia vazia
+    if(strcmp("E",sequencia)==0) ///Caso o usuario digite "E", sera interpretado que ele digitou nada, ou seja, cadeia vazia
         sequencia[0]='\0';
-    }
     return reconhece_(a,sequencia,a->estado_inicial);
 }
 
 ///Dado o estado inicial do automato, retorna se a cadeia eh aceita pelo automato
 int reconhece_(Automato a,char *sequencia,char *estado_atual){
-    //printf("Recebeu a sequencia %s\n",sequencia);
-    //printf("Esta no estado %s\n",estado_atual);
-    char simbolos_aceitos[36];
+    char simbolos_aceitos[36],**estados_destinos;
     int i, qtd_destinos=0,j=0;
-    char **estados_destinos;
     if(sequencia[0]=='\0'){ ///Se a sequencia acabou
-        //printf("ACABOU A SEQUENCIA\n");
         if(eh_estado_final(a,estado_atual))return 1;
         else{
             retorna_simbolos(a,estado_atual,simbolos_aceitos);
-            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n");*/return 0;} ///Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
+            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0)return 0; ///Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
         }
     }
     retorna_simbolos(a,estado_atual,simbolos_aceitos);
-    //printf("Simbolos aceitos pelo estado %s: %s\n",estado_atual,simbolos_aceitos);
     if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n");*/return 0;} ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
     for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
         j=0;
         if(simbolos_aceitos[i]==sequencia[0] && sequencia[0]!='\0'){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
             estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,sequencia[0],&qtd_destinos);
-            //printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,sequencia[0],estado_atual);
             do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao
-                //printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],sequencia[0],estado_atual);
                 if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
                 j++;
             }while(j<qtd_destinos);
         }
         else{
             if(simbolos_aceitos[i]=='&'){ ///Caso o estado aceite E-transicao
-                //printf("&&&&&&&&&&&&&&\n");
                 estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,'&',&qtd_destinos);
-                //printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,'&',estado_atual);
                 do{ ///Faz passar por todas as funcoes de transicao deste estado com o simbolo E-transicao
-                    //printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],'&',estado_atual);
-                    //printf("Mandando a sequencia %s\n",sequencia);
                     if(reconhece_(a,sequencia,estados_destinos[j])==1)return 1;
                     j++;
                 }while(j<qtd_destinos);
             }
         }
     }
-    //printf("Retornando final\n");
     return 0;
 }
 
@@ -133,6 +120,7 @@ void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){
 
 //Retorna um ponteiro pro autômato, ou NULL caso acontença algum erro.
 Automato carrega_automato(char* caminho) {
+    printf("Tamanho: %d\n",sizeof(struct automato));
     FILE* f = fopen(caminho, "r");
     Automato a = (Automato) malloc(sizeof(struct automato));
     char temp[300];
@@ -223,7 +211,7 @@ Automato carrega_automato(char* caminho) {
 
 void carrega_estados(Automato *a, char *estados) {
     int i, j = 0, k = 0;
-    char temp[16];
+    char temp[15];
     for(i = 0; i <= strlen(estados); i++) {
         if(estados[i] != ',' && estados[i] != '\0') {
             temp[k] = estados[i];
@@ -234,7 +222,6 @@ void carrega_estados(Automato *a, char *estados) {
             int n;
             for(n = 0; n <= strlen(temp); n++)
                 (*a)->estados[j][n] = temp[n];
-
             j++;
         }
     }
