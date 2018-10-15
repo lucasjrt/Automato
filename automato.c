@@ -18,30 +18,12 @@ struct automato {
     char estados[30][15]; //Possível armazenar 30 estados com 15 digitos
     int num_estados;
     char alfabeto[36];
-    struct delta funcoes[100];
+    struct delta funcoes[200];
     int num_funcoes;
     char estado_inicial[15];
     char estado_final[30][15];
     int num_final;
 };
-
-///Dado um estado e um simbolo de transicao, retorna os estados de destino e a quatidade de estados de destinos pelo parametro
-char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos){
-    int i,j=0;*qtd_destinos=0;
-    char **destinos;
-    destinos = (char**)malloc(sizeof(char*)*30);
-    for(int i=0;i<30;i++){
-        destinos[i] = (char*)malloc(sizeof(char)*15);
-    }
-    for(i=0;i<a->num_funcoes;i++){
-        if((strcmp(estado,a->funcoes[i].estado1)==0)&&simbolo==a->funcoes[i].transicao){ ///Se funcao de transicao tenha a origem e simbolo de transicao desejados entao copia o destino para o vetor de destinos
-            (*qtd_destinos)++;
-            strcpy(destinos[j],a->funcoes[i].estado2);
-            j++;
-        }
-    }
-    return destinos;
-}
 
 ///Retorna se a cadeia eh aceita pelo automato
 int reconhece(Automato a,char *sequencia){
@@ -98,6 +80,24 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
     return 0;
 }
 
+///Dado um estado e um simbolo de transicao, retorna os estados de destino e a quatidade de estados de destinos pelo parametro
+char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos){
+    int i,j=0;*qtd_destinos=0;
+    char **destinos;
+    destinos = (char**)malloc(sizeof(char*)*30);
+    for(int i=0;i<30;i++){
+        destinos[i] = (char*)malloc(sizeof(char)*15);
+    }
+    for(i=0;i<a->num_funcoes;i++){
+        if((strcmp(estado,a->funcoes[i].estado1)==0)&&simbolo==a->funcoes[i].transicao){ ///Se funcao de transicao tenha a origem e simbolo de transicao desejados entao copia o destino para o vetor de destinos
+            (*qtd_destinos)++;
+            strcpy(destinos[j],a->funcoes[i].estado2);
+            j++;
+        }
+    }
+    return destinos;
+}
+
 ///Retorna 1 caso o estado seja final e 0 caso contrario
 int eh_estado_final(Automato a,char *estado){
     int i;
@@ -135,7 +135,7 @@ void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){
 Automato carrega_automato(char* caminho) {
     FILE* f = fopen(caminho, "r");
     Automato a = (Automato) malloc(sizeof(struct automato));
-    char temp[200];
+    char temp[300];
     //Carrega os estados do autômato
     fscanf(f, "%s", temp); //Lê "estados"
     if(!strcmp(temp, "estados")) {
@@ -232,8 +232,9 @@ void carrega_estados(Automato *a, char *estados) {
         } else {
             k = 0;
             int n;
-            for(n = 0; n < strlen(temp); n++)
+            for(n = 0; n <= strlen(temp); n++)
                 (*a)->estados[j][n] = temp[n];
+
             j++;
         }
     }
