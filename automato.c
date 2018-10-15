@@ -1,12 +1,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "automato.h"
-//#define COLOR_RED     "\x1b[31m"
-#define COLOR_RED ""
-//#define COLOR_GREEN   "\x1b[32m"
-#define COLOR_GREEN ""
-//#define COLOR_RESET   "\x1b[0m"
-#define COLOR_RESET ""
+#ifdef __unix__
+  #define COLOR_RED     "\x1b[31m"
+  #define COLOR_GREEN   "\x1b[32m"
+  #define COLOR_RESET   "\x1b[0m"
+#elif defined(_WIN32) || defined(WIN32)
+  #define COLOR_RED     ""
+  #define COLOR_GREEN   ""
+  #define COLOR_RESET   ""
+#endif
 
 struct delta {
     char estado1[15];
@@ -120,7 +123,6 @@ void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){
 
 //Retorna um ponteiro pro autômato, ou NULL caso acontença algum erro.
 Automato carrega_automato(char* caminho) {
-    printf("Tamanho: %d\n",sizeof(struct automato));
     FILE* f = fopen(caminho, "r");
     Automato a = (Automato) malloc(sizeof(struct automato));
     char temp[300];
