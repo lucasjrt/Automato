@@ -1,9 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "automato.h"
-#define COLOR_RED     ""
-#define COLOR_GREEN   ""
-#define COLOR_RESET   ""
+//#define COLOR_RED     "\x1b[31m"
+#define COLOR_RED ""
+//#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_GREEN ""
+//#define COLOR_RESET   "\x1b[0m"
+#define COLOR_RESET ""
 
 
 char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos){ //Aplica uma funcao de transicao dado um simbolo e um estado, retornando a quatidade de estados destinos, e os estados destinos pelo parametro
@@ -99,26 +102,11 @@ void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){ //Ret
     simbolos_possiveis[j] = '\0';
 }
 
-
-
-
-
-
-#include <stdlib.h>
-#include <string.h>
-#include "automato.h"
-//#define COLOR_RED     "\x1b[31m"
-#define COLOR_RED ""
-//#define COLOR_GREEN   "\x1b[32m"
-#define COLOR_GREEN ""
-//#define COLOR_RESET   "\x1b[0m"
-#define COLOR_RESET ""
-
 //Retorna um ponteiro pro autômato, ou NULL caso acontença algum erro.
 Automato carrega_automato(char* caminho) {
     FILE* f = fopen(caminho, "r");
     Automato a = (Automato) malloc(sizeof(struct automato));
-    char temp[100];
+    char temp[200];
     //Carrega os estados do autômato
     fscanf(f, "%s", temp); //Lê "estados"
     if(!strcmp(temp, "estados")) {
