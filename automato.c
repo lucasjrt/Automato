@@ -25,7 +25,8 @@ struct automato {
     int num_final;
 };
 
-char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos){ //Aplica uma funcao de transicao dado um simbolo e um estado, retornando os estados destinos, e a quatidade de estados destinos pelo parametro
+///Dado um estado e um simbolo de transicao, retorna os estados de destino e a quatidade de estados de destinos pelo parametro
+char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos){
     int i,j=0;*qtd_destinos=0;
     char **destinos;
     destinos = (char**)malloc(sizeof(char*)*30);
@@ -33,7 +34,7 @@ char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd
         destinos[i] = (char*)malloc(sizeof(char)*15);
     }
     for(i=0;i<a->num_funcoes;i++){
-        if((strcmp(estado,a->funcoes[i].estado1)==0)&&simbolo==a->funcoes[i].transicao){ //A funcao de transicao tenha a origem e simbolo de transicao desejado entao copia o destino para o vetor de destinos
+        if((strcmp(estado,a->funcoes[i].estado1)==0)&&simbolo==a->funcoes[i].transicao){ ///Se funcao de transicao tenha a origem e simbolo de transicao desejados entao copia o destino para o vetor de destinos
             (*qtd_destinos)++;
             strcpy(destinos[j],a->funcoes[i].estado2);
             j++;
@@ -42,44 +43,49 @@ char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd
     return destinos;
 }
 
+///Retorna se a cadeia eh aceita pelo automato
 int reconhece(Automato a,char *sequencia){
+    if(strcmp("E",sequencia)==0){ ///Caso o usuario digite "E", sera interpretado que ele digitou nada, ou seja, cadeia vazia
+        sequencia[0]='\0';
+    }
     return reconhece_(a,sequencia,a->estado_inicial);
 }
 
+///Dado o estado inicial do automato, retorna se a cadeia eh aceita pelo automato
 int reconhece_(Automato a,char *sequencia,char *estado_atual){
     //printf("Recebeu a sequencia %s\n",sequencia);
     //printf("Esta no estado %s\n",estado_atual);
     char simbolos_aceitos[36];
     int i, qtd_destinos=0,j=0;
     char **estados_destinos;
-    if(sequencia[0]=='\0'){ //Se a sequencia acabou
+    if(sequencia[0]=='\0'){ ///Se a sequencia acabou
         //printf("ACABOU A SEQUENCIA\n");
         if(eh_estado_final(a,estado_atual))return 1;
         else{
             retorna_simbolos(a,estado_atual,simbolos_aceitos);
-            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n")*/;return 0;} //Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
+            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n")*/;return 0;} ///Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
         }
     }
     retorna_simbolos(a,estado_atual,simbolos_aceitos);
     //printf("Simbolos aceitos pelo estado %s: %s\n",estado_atual,simbolos_aceitos);
-    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n")*/;return 0;} //Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
-    for(i=0;i<strlen(simbolos_aceitos);i++){
+    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n")*/;return 0;} ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
+    for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
         j=0;
-        if(simbolos_aceitos[i]==sequencia[0] && sequencia[0]!='\0'){
+        if(simbolos_aceitos[i]==sequencia[0] && sequencia[0]!='\0'){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
             estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,sequencia[0],&qtd_destinos);
             //printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,sequencia[0],estado_atual);
-            do{ //Faz interpretar todas as funcoes com a mesma transicao para estados diferentes
+            do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao
                 //printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],sequencia[0],estado_atual);
-                if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
+                 if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
                 j++;
             }while(j<qtd_destinos);
         }
         else{
-            if(simbolos_aceitos[i]=='&'){
+            if(simbolos_aceitos[i]=='&'){ ///Caso o estado aceite E-transicao
                 //printf("&&&&&&&&&&&&&&\n");
                 estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,'&',&qtd_destinos);
                 //printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,'&',estado_atual);
-                do{
+                do{ ///Faz passar por todas as funcoes de transicao deste estado com o simbolo E-transicao
                     //printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],'&',estado_atual);
                     //printf("Mandando a sequencia %s\n",sequencia);
                     if(reconhece_(a,sequencia,estados_destinos[j])==1)return 1;
@@ -92,14 +98,16 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
     return 0;
 }
 
-int eh_estado_final(Automato a,char *estado_atual){//Dado um estado esta funcao retorna se este estado eh final
+///Retorna 1 caso o estado seja final e 0 caso contrario
+int eh_estado_final(Automato a,char *estado){
     int i;
     for(i=0;i<a->num_final;i++){
-        if(strcmp(a->estado_final[0],estado_atual)==0)return 1;
+        if(strcmp(a->estado_final[0],estado)==0)return 1;
     }
     return 0;
 }
 
+///Retorna 1 se o caractere esta contido no vetor, 0 caso contrario
 int ja_existe(char caractere,char *vetor,int tam){
     int i;
     for(i=0;i<tam;i++){
@@ -108,7 +116,8 @@ int ja_existe(char caractere,char *vetor,int tam){
     return 0;
 }
 
-void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){ //Retorna um array dos simbolos que podem ser recebidos a partir deste estado
+///Retorna um array dos simbolos que podem ser recebidos a partir deste estado
+void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){
     int i,j=0;
     simbolos_possiveis[0] = '\0';
     for(i=0;i<a->num_funcoes;i++){

@@ -14,9 +14,6 @@ int main() {
     while(repete=='s'){
         printf("Digite a cadeia para verificar se o automato a reconhece: ");
         scanf("%s",cadeia);
-        if(strcmp("E",cadeia)==0){ //Caso o usuario digite "E", sera interpretado que ele digitou nada, ou seja, cadeia vazia
-            cadeia[0]='\0';
-        }
         reconheceu = reconhece(a,cadeia);
         if(reconheceu)printf("Aceita\n");
         else printf("Nao aceita\n");
