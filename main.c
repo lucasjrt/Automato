@@ -10,7 +10,7 @@
 int main() {
     char cadeia[100],repete='s';
     int reconheceu;
-    Automato a = carrega_automato("Automato03.dat");
+    Automato a = carrega_automato("Automato04.dat");
     while(repete=='s'){
         printf("Digite a cadeia para verificar se o automato a reconhece: ");
         scanf("%s",cadeia);

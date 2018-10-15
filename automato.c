@@ -63,12 +63,12 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
         if(eh_estado_final(a,estado_atual))return 1;
         else{
             retorna_simbolos(a,estado_atual,simbolos_aceitos);
-            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n")*/;return 0;} ///Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
+            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n");*/return 0;} ///Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
         }
     }
     retorna_simbolos(a,estado_atual,simbolos_aceitos);
     //printf("Simbolos aceitos pelo estado %s: %s\n",estado_atual,simbolos_aceitos);
-    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n")*/;return 0;} ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
+    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n");*/return 0;} ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
     for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
         j=0;
         if(simbolos_aceitos[i]==sequencia[0] && sequencia[0]!='\0'){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
@@ -76,7 +76,7 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
             //printf("Tem %d destinos lendo %c a partir de %s\n",qtd_destinos,sequencia[0],estado_atual);
             do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao
                 //printf("Chamando funcao recursiva, para ir para %s, pois leu %c a partir de %s\n",estados_destinos[j],sequencia[0],estado_atual);
-                 if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
+                if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
                 j++;
             }while(j<qtd_destinos);
         }
@@ -102,7 +102,7 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
 int eh_estado_final(Automato a,char *estado){
     int i;
     for(i=0;i<a->num_final;i++){
-        if(strcmp(a->estado_final[0],estado)==0)return 1;
+        if(strcmp(a->estado_final[i],estado)==0)return 1;
     }
     return 0;
 }
