@@ -47,10 +47,10 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
         }
     }
     retorna_simbolos(a,estado_atual,simbolos_aceitos);
-    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n");*/return 0;} ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
+    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0)return 0; ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
     for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
         j=0;
-        if(simbolos_aceitos[i]==sequencia[0] && sequencia[0]!='\0'){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
+        if(simbolos_aceitos[i]==sequencia[0]){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
             estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,sequencia[0],&qtd_destinos);
             do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao
                 if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
