@@ -2,9 +2,10 @@
 #include <string.h>
 #include "automato.h"
 #ifdef __unix__
-  #define COLOR_RED     "\x1b[31m"
-  #define COLOR_GREEN   "\x1b[32m"
-  #define COLOR_RESET   "\x1b[0m"
+  #define COLOR_RED         "\e[31m"
+  #define COLOR_GREEN       "\e[32m"
+  #define COLOR_LIGH_YELLOW "\e[93m"
+  #define COLOR_RESET       "\e[0m"
 #elif defined(_WIN32) || defined(WIN32)
   #define COLOR_RED     ""
   #define COLOR_GREEN   ""
@@ -182,9 +183,15 @@ Automato carrega_automato(char* caminho) {
     fscanf(f, "%s", temp); // Lê "inicial"
     //Carrega o estado inicial do automato
     if(!strcmp(temp, "inicial")) {
-        fscanf(f, "%s", temp); // Lê os estados iniciais
-        if(!carrega_inicial(&a, temp))
-            return NULL;
+        fscanf(f, "%s", temp); // Lê o estado inicial
+        if(!carrega_inicial(&a, temp)) {
+          return NULL;
+          printf(COLOR_RED"Nao foi possivel carregar o estado incial\n"COLOR_RESET);
+        }
+        if(!strlen(a->estado_inicial)) {
+          printf(COLOR_RED"O automato deve ter um estado inicial\n"COLOR_RESET);
+          return NULL;
+        }
         printf(COLOR_GREEN "Estado inicial carregado:\n" COLOR_RESET "%s\n", a->estado_inicial);
     }
     else {
@@ -197,12 +204,20 @@ Automato carrega_automato(char* caminho) {
         fscanf(f, "%s", temp); //Lê os estados finais
         if(!carrega_final(&a, temp))
             return NULL;
-        printf(COLOR_GREEN "%d estados finais carregados:\n" COLOR_RESET, a->num_final);
-        int i;
-        for(i = 0; i < a->num_final; i++) {
-            printf("%s%s", a->estado_final[i], (i < a->num_final - 1 ? ", ":""));
+        if(a->num_final == 1)
+          printf(COLOR_GREEN "Estado final:\n" COLOR_RESET "%s\n", a->estado_final[0]);
+        else if(a->num_final <= 0){
+          printf(COLOR_RED "O automato deve ter pelo menos um estado final\n" COLOR_RESET);
+          return NULL;
         }
-        printf("\n");
+        else {
+          printf(COLOR_GREEN "%d estados finais carregados:\n" COLOR_RESET, a->num_final);
+          int i;
+          for(i = 0; i < a->num_final; i++) {
+            printf("%s%s", a->estado_final[i], (i < a->num_final - 1 ? ", ":""));
+          }
+          printf("\n");
+        }
     }
     else {
         printf(COLOR_RED "Nao foi possivel encontrar o estado final do automato\n" COLOR_RESET);
@@ -230,6 +245,7 @@ void carrega_estados(Automato *a, char *estados) {
     (*a)->num_estados = j;
 }
 
+//Retorna 1 se sucesso, 0 se erro
 int carrega_alfabeto(Automato *a, char *alfabeto) {
     int i, j = 0;
     for(i = 0; i <= strlen(alfabeto); i++) {

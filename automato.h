@@ -21,4 +21,4 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual);
 int reconhece(Automato a,char *sequencia);
 char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos);
 
-#endif //
+#endif //DEFINED_AUTOMATO_H
