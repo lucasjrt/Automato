@@ -2,7 +2,7 @@
 #include <string.h>
 #include "automato.h"
 #ifdef __unix__
-  #define COLOR_RED         "\e[31m"
+  #define COLOR_RED         "\e[91m"
   #define COLOR_GREEN       "\e[32m"
   #define COLOR_LIGH_YELLOW "\e[93m"
   #define COLOR_RESET       "\e[0m"
@@ -125,6 +125,10 @@ void retorna_simbolos(Automato a, char *estado, char *simbolos_possiveis){
 //Retorna um ponteiro pro autômato, ou NULL caso acontença algum erro.
 Automato carrega_automato(char* caminho) {
     FILE* f = fopen(caminho, "r");
+    if(f == NULL) {
+      printf(COLOR_RED"Nao foi possivel encontrar o arquivo\n"COLOR_RESET);
+      return NULL;
+    }
     Automato a = (Automato) malloc(sizeof(struct automato));
     char temp[300];
     //Carrega os estados do autômato
