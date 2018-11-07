@@ -45,9 +45,15 @@ void trataSeq_(Automato a, char *sequencia, char *inicioR, char *fimR){
     char *r1,*r2,inicio[15],fim[15];
     int meio;
     meio = retornaMeio(sequencia);
-    /*if(meio==-1){
-        printf("Sem meio\n");
-    }*/
+    if(meio==-1){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+        itoa(a->num_estados,fim,10);
+        insereEstado(a,fim);
+        if(sequencia[0]=='E')insereTransicao(a,inicio,fim,'&');
+        else insereTransicao(a,inicio,fim,sequencia[0]);
+
+    }
     if(sequencia[meio]=='*'){
         r1 = (char*)malloc(strlen(sequencia));
         strcpy(r1,sequencia);
@@ -88,7 +94,8 @@ void trataUniao(Automato a, char *r1, char *r2, char *inicioR, char *fimR){
 
         itoa(a->num_estados,fim,10);
         insereEstado(a,fim);
-        insereTransicao(a,inicio,fim,r1[0]);
+        if(r1[0]!='E')insereTransicao(a,inicio,fim,r1[0]);
+        else insereTransicao(a,inicio,fim,'&');
     }else trataSeq_(a,r1,inicio,fim);
 
     itoa(a->num_estados,ultimo,10);
@@ -102,7 +109,8 @@ void trataUniao(Automato a, char *r1, char *r2, char *inicioR, char *fimR){
 
         itoa(a->num_estados,fim,10);
         insereEstado(a,fim);
-        insereTransicao(a,inicio,fim,r2[0]);
+        if(r2[0]!='E')insereTransicao(a,inicio,fim,r2[0]);
+        else insereTransicao(a,inicio,fim,'&');
     }else trataSeq_(a,r2,inicio,fim);
     insereTransicao(a,primeiro,inicio,'&');
     insereTransicao(a,fim,ultimo,'&');
@@ -118,7 +126,8 @@ void trataConcatenacao(Automato a, char *r1, char *r2, char *inicioR, char *fimR
         insereEstado(a,inicio);
         itoa(a->num_estados,fim,10);
         insereEstado(a,fim);
-        insereTransicao(a,inicio,fim,r1[0]);
+        if(r1[0]!='E')insereTransicao(a,inicio,fim,r1[0]);
+        else insereTransicao(a,inicio,fim,'&');
     }else trataSeq_(a,r1,inicio,fim);
     strcpy(inicioR,inicio);
     if(ehSimbolo(r2)){
@@ -126,7 +135,8 @@ void trataConcatenacao(Automato a, char *r1, char *r2, char *inicioR, char *fimR
         insereEstado(a,inicio);
         itoa(a->num_estados,ultimo,10);
         insereEstado(a,ultimo);
-        insereTransicao(a,inicio,ultimo,r2[0]);
+        if(r2[0]!='E')insereTransicao(a,inicio,ultimo,r2[0]);
+        else insereTransicao(a,inicio,ultimo,'&');
     }
     else trataSeq_(a,r2,inicio,ultimo);
     insereTransicao(a,fim,inicio,'&');
@@ -142,7 +152,8 @@ void trataFechamento(Automato a, char *r1, char *inicioR, char *fimR){
         insereEstado(a,primeiro);
         itoa(a->num_estados,ultimo,10);
         insereEstado(a,ultimo);
-        insereTransicao(a,primeiro,ultimo,r1[0]);
+        if(r1[0]!='E')insereTransicao(a,primeiro,ultimo,r1[0]);
+        else insereTransicao(a,primeiro,ultimo,'&');
     }
     else trataSeq_(a,r1,primeiro,ultimo);
     insereTransicao(a,ultimo,primeiro,'&');
@@ -151,8 +162,6 @@ void trataFechamento(Automato a, char *r1, char *inicioR, char *fimR){
     itoa(a->num_estados,fim,10);
     insereEstado(a,fim);
     insereTransicao(a,inicio,primeiro,'&');
-    itoa(a->num_estados,fim,10);
-    insereEstado(a,fim);
     insereTransicao(a,inicio,fim,'&');
     insereTransicao(a,ultimo,fim,'&');
     strcpy(inicioR,inicio);
