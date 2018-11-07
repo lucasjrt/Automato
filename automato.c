@@ -38,7 +38,15 @@ Automato trataSeq(char *sequencia){
     iniciaAutomato(&a);
     preencheAlfabeto(a,sequencia);
     inserePonto(sequencia);
-    trataSeq_(a,sequencia,inicio,fim);
+    if(strcmp(sequencia,"E*")==0){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+        itoa(a->num_estados,fim,10);
+        insereEstado(a,fim);
+        insereTransicao(a,inicio,fim,'&');
+    }
+    else
+        trataSeq_(a,sequencia,inicio,fim);
     insereEstadoInicial(a,inicio);
     insereEstadoFinal(a,fim);
     return a;
