@@ -29,31 +29,34 @@ int main() {
     char cadeia[200],repete='s';
     int reconheceu,opcao;
     Automato a;
-    printf("1 - Ler de arquivo\n2 - Ler expressao regular\n3 - SAIR\nEscolha uma opcao: ");
-    scanf("%d",&opcao);
-    if(opcao==1)a = carrega_automato("Automato05.dat");
-    else if(opcao==2){
-        char sequencia[100];
-        printf("Digite a expressao regular: \n");
-        scanf("%s",sequencia);
-        a = trataSeq(sequencia);
-        //mostrarAutomato(a);
-    }else return 1;
-    while(repete=='s'){
-      printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o automato a reconhece: ");
-      scanf("%s",cadeia);
-      printf(COLOR_RESET);
-      reconheceu = reconhece(a,cadeia);
-      if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
-      else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
-      printf(COLOR_LIGH_YELLOW"Quer analisar outra sequencia (s/n)? "COLOR_RESET);
+    do{
+      clear();
+      printf(COLOR_LIGH_YELLOW"1 - Ler de arquivo\n2 - Ler expressao regular\n3 - SAIR\nEscolha uma opcao: ");
+      scanf("%d",&opcao);
+      if(opcao==1)a = carrega_automato("Automato05.dat");
+      else if(opcao==2){
+          char sequencia[100];
+          printf(COLOR_LIGH_YELLOW"Digite a expressao regular: \n");
+          scanf("%s",sequencia);
+          printf(COLOR_RESET);
+          a = trataSeq(sequencia);
+          //mostrarAutomato(a);
+      }else return 1;
+      while(repete=='s'){
+        printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o automato a reconhece: ");
+        scanf("%s",cadeia);
+        printf(COLOR_RESET);
+        reconheceu = reconhece(a,cadeia);
+        if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
+        else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
+        printf(COLOR_LIGH_YELLOW"Quer analisar outra sequencia (s/n)? "COLOR_RESET);
+        limpar_buffer();
+        scanf("%c",&repete);
+      }
+      printf(COLOR_LIGH_YELLOW"Ir para o menu? (s/n):"COLOR_RESET);
       limpar_buffer();
-      scanf("%c",&repete);
-    }
-    printf(COLOR_LIGH_YELLOW"Trocar de arquivo (s/n)?"COLOR_RESET);
-    limpar_buffer();
-    scanf("%c", &repete);
-  } while(repete!='n');
+      scanf("%c", &repete);
+    } while(repete!='n');
   clear();
   printf(COLOR_BLUE "Fim da apresentacao!!!\n");
   printf("Integrantes do grupo:\n");

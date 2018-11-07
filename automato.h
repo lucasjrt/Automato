@@ -41,4 +41,7 @@ void preencheAlfabeto(Automato a,char *sequencia);
 void inserePonto(char *sequencia);
 int possuiAlfabeto(Automato a, char caracter,int tam);
 
+void reverse(char s[]);
+void itoal(int n, char s[]);
+
 #endif //
