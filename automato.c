@@ -19,15 +19,305 @@ struct delta {
 };
 
 struct automato {
-    char estados[30][15];
+    char estados[150][15];
     int num_estados;
     char alfabeto[36];
-    struct delta funcoes[100];
+    struct delta funcoes[150];
     int num_funcoes;
     char estado_inicial[15];
     char estado_final[30][15];
     int num_final;
 };
+
+Automato trataSeq(char *sequencia){
+    char inicio[15],fim[15];
+    Automato a;
+    iniciaAutomato(&a);
+    preencheAlfabeto(a,sequencia);
+    inserePonto(sequencia);
+    trataSeq_(a,sequencia,inicio,fim);
+    insereEstadoInicial(a,inicio);
+    insereEstadoFinal(a,fim);
+    return a;
+}
+
+void trataSeq_(Automato a, char *sequencia, char *inicioR, char *fimR){
+    int i;
+    char *r1,*r2,inicio[15],fim[15];
+    int meio;
+    meio = retornaMeio(sequencia);
+    if(meio==-1){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+        itoa(a->num_estados,fim,10);
+        insereEstado(a,fim);
+        if(sequencia[0]=='E')insereTransicao(a,inicio,fim,'&');
+        else insereTransicao(a,inicio,fim,sequencia[0]);
+
+    }
+    if(sequencia[meio]=='*'){
+        r1 = (char*)malloc(strlen(sequencia));
+        strcpy(r1,sequencia);
+        sequencia[strlen(sequencia)] = '\0';
+        trataFechamento(a,r1,inicio,fim);
+    }
+    if(sequencia[meio]=='+'){
+        r1 = (char*)malloc(strlen(sequencia)-strlen(&sequencia[meio+1]));
+        r2 = (char*)malloc(strlen(&sequencia[meio]));
+        for(i=0;i<strlen(sequencia)-strlen(&sequencia[meio+1])-1;i++){
+            r1[i] = sequencia[i];
+        }
+        r1[i] = '\0';
+        strcpy(r2,&sequencia[meio+1]);
+        trataUniao(a,r1,r2,inicio,fim);
+    }
+    if(sequencia[meio]=='.'){
+        r1 = (char*)malloc(strlen(sequencia)-strlen(&sequencia[meio+1]));
+        r2 = (char*)malloc(strlen(&sequencia[meio]));
+        for(i=0;i<strlen(sequencia)-strlen(&sequencia[meio+1])-1;i++){
+            r1[i] = sequencia[i];
+        }
+        r1[i] = '\0';
+        strcpy(r2,&sequencia[meio+1]);
+        trataConcatenacao(a,r1,r2,inicio,fim);
+    }
+    strcpy(inicioR,inicio);
+    strcpy(fimR,fim);
+}
+
+void trataUniao(Automato a, char *r1, char *r2, char *inicioR, char *fimR){
+    char inicio[15],fim[15],primeiro[15], ultimo[15];
+    itoa(a->num_estados,primeiro,10);
+    insereEstado(a,primeiro);
+    if(ehSimbolo(r1)){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+
+        itoa(a->num_estados,fim,10);
+        insereEstado(a,fim);
+        if(r1[0]!='E')insereTransicao(a,inicio,fim,r1[0]);
+        else insereTransicao(a,inicio,fim,'&');
+    }else trataSeq_(a,r1,inicio,fim);
+
+    itoa(a->num_estados,ultimo,10);
+    insereEstado(a,ultimo);
+    insereTransicao(a,primeiro,inicio,'&');
+    insereTransicao(a,fim,ultimo,'&');
+
+    if(ehSimbolo(r2)){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+
+        itoa(a->num_estados,fim,10);
+        insereEstado(a,fim);
+        if(r2[0]!='E')insereTransicao(a,inicio,fim,r2[0]);
+        else insereTransicao(a,inicio,fim,'&');
+    }else trataSeq_(a,r2,inicio,fim);
+    insereTransicao(a,primeiro,inicio,'&');
+    insereTransicao(a,fim,ultimo,'&');
+    strcpy(inicioR,primeiro);
+    strcpy(fimR,ultimo);
+
+}
+
+void trataConcatenacao(Automato a, char *r1, char *r2, char *inicioR, char *fimR){
+    char inicio[15],fim[15],ultimo[15];
+    if(ehSimbolo(r1)){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+        itoa(a->num_estados,fim,10);
+        insereEstado(a,fim);
+        if(r1[0]!='E')insereTransicao(a,inicio,fim,r1[0]);
+        else insereTransicao(a,inicio,fim,'&');
+    }else trataSeq_(a,r1,inicio,fim);
+    strcpy(inicioR,inicio);
+    if(ehSimbolo(r2)){
+        itoa(a->num_estados,inicio,10);
+        insereEstado(a,inicio);
+        itoa(a->num_estados,ultimo,10);
+        insereEstado(a,ultimo);
+        if(r2[0]!='E')insereTransicao(a,inicio,ultimo,r2[0]);
+        else insereTransicao(a,inicio,ultimo,'&');
+    }
+    else trataSeq_(a,r2,inicio,ultimo);
+    insereTransicao(a,fim,inicio,'&');
+    strcpy(fimR,ultimo);
+}
+
+void trataFechamento(Automato a, char *r1, char *inicioR, char *fimR){
+    char inicio[15],fim[15],primeiro[15],ultimo[15];
+    r1[strlen(r1)-1] = '\0';
+    trataParenteses(r1);
+    if(ehSimbolo(r1)){
+        itoa(a->num_estados,primeiro,10);
+        insereEstado(a,primeiro);
+        itoa(a->num_estados,ultimo,10);
+        insereEstado(a,ultimo);
+        if(r1[0]!='E')insereTransicao(a,primeiro,ultimo,r1[0]);
+        else insereTransicao(a,primeiro,ultimo,'&');
+    }
+    else trataSeq_(a,r1,primeiro,ultimo);
+    insereTransicao(a,ultimo,primeiro,'&');
+    itoa(a->num_estados,inicio,10);
+    insereEstado(a,inicio);
+    itoa(a->num_estados,fim,10);
+    insereEstado(a,fim);
+    insereTransicao(a,inicio,primeiro,'&');
+    insereTransicao(a,inicio,fim,'&');
+    insereTransicao(a,ultimo,fim,'&');
+    strcpy(inicioR,inicio);
+    strcpy(fimR,fim);
+}
+
+void mostrarAutomato(Automato a){
+    int i;
+    printf("Estados:\n");
+    for(i=0;i<a->num_estados;i++){
+        printf("%s\n",a->estados[i]);
+    }
+    printf("Numero de estados: %d\n",a->num_estados);
+    printf("Alfabeto:\n%s\n",a->alfabeto);
+    printf("Funcoes de transicao\n");
+    for(i=0;i<a->num_funcoes;i++){
+        printf("Origem: %s\t Destino: %s\t Transicao: %c\n",a->funcoes[i].estado1,a->funcoes[i].estado2,a->funcoes[i].transicao);
+    }
+    printf("Numero de funcoes: %d\n",a->num_funcoes);
+    printf("Estado inicial: %s\n",a->estado_inicial);
+    printf("Estados finais:\n");
+    for(i=0;i<a->num_final;i++){
+        printf("%s\n",a->estado_final[i]);
+    }
+}
+
+void trataParenteses(char *sequencia){
+    int controle=0,i,tam=strlen(sequencia);
+    if(sequencia[0]=='('&&sequencia[tam-1]==')'){
+        for(i=1;i<tam-1;i++){
+            if(controle==0&&sequencia[i]==')'){
+                return;
+            }
+            else if(sequencia[i]==')')controle--;
+            else if(sequencia[i]=='(')controle++;
+        }
+        for(i=0;i<tam-1;i++){
+            sequencia[i]=sequencia[i+1];
+        }
+        sequencia[tam-2] = '\0';
+    }return;
+}
+
+void insereTransicao(Automato a, char *origem, char *destino, char transicao){
+    strcpy(a->funcoes[a->num_funcoes].estado1,origem);
+    strcpy(a->funcoes[a->num_funcoes].estado2,destino);
+    a->funcoes[a->num_funcoes].transicao = transicao;
+    a->num_funcoes++;
+}
+
+void insereEstado(Automato a, char *estado){
+    //printf("Adicionando %s\n",estado);
+    strcpy(a->estados[a->num_estados],estado);
+    //printf("%s adicionado em %d\n",a->estados[a->num_estados],a->num_estados);
+    a->num_estados++;
+}
+
+void insereEstadoFinal(Automato a,char *estado){
+    strcpy(a->estado_final[a->num_final],estado);
+    a->num_final++;
+}
+
+void insereEstadoInicial(Automato a, char *estado){
+    strcpy(a->estado_inicial,estado);
+}
+
+void preencheAlfabeto(Automato a,char *sequencia){
+    int i,j=0;
+    for(i=0;i<strlen(sequencia);i++){
+        if(possuiAlfabeto(a,sequencia[i],j)==0&&sequencia[i]!='+'&&sequencia[i]!='.'&&sequencia[i]!='*'&&sequencia[i]!='('&&sequencia[i]!=')'){
+            a->alfabeto[j]=sequencia[i];
+            j++;
+        }
+        a->alfabeto[j]='&';
+        a->alfabeto[j+1]='\0';
+    }
+}
+
+void inserePonto(char *sequencia){
+    int i,j=0;
+    char seq[200];
+    for(i=0;i<strlen(sequencia);i++){
+        if(sequencia[i]!='+'&&sequencia[i]!='.'&&sequencia[i]!='('&&
+           sequencia[i+1]!='+'&&sequencia[i+1]!='.'&&sequencia[i+1]!='*'&&sequencia[i+1]!=')'&&sequencia[i+1]!='\0'){
+            seq[j]=sequencia[i];
+            j++;
+            seq[j]='.';
+            j++;
+           }
+        else{
+            seq[j]=sequencia[i];
+            j++;
+        }
+    }
+    seq[j]='\0';
+    strcpy(sequencia,seq);
+}
+
+int possuiAlfabeto(Automato a, char caracter,int tam){
+    int i;
+    for(i=0;i<tam;i++){
+        if(a->alfabeto[i]==caracter)return 1;
+    }
+    return 0;
+}
+
+int ehSimbolo(char *sequencia){
+    if(sequencia[0]!='+'&&sequencia[0]!='.'&&sequencia[0]!='*'&&sequencia[0]!='('&&sequencia[0]!=')'&&sequencia[1]=='\0'){return 1;}
+    return 0;
+}
+
+int iniciaAutomato(Automato *a){
+    *a = (Automato) malloc(sizeof(struct automato));
+    (*a)->num_estados=0;
+    (*a)->num_final=0;
+    (*a)->num_funcoes=0;
+    return 1;
+}
+
+int retornaMeio(char *sequencia){
+    int i=0, qtdparenteses=0, Prioridadeatual=0, meio=-1;
+    trataParenteses(sequencia);
+    while(sequencia[i]!='\0'){
+        if(sequencia[i]=='('){
+            qtdparenteses = 1;
+            i++;
+            while(qtdparenteses>0){
+                if(sequencia[i]=='(')qtdparenteses++;
+                else if(sequencia[i]==')')qtdparenteses--;
+                i++;
+            }
+        }
+        if(sequencia[i]=='.'&&i!=0){
+            if(Prioridadeatual<2){
+                Prioridadeatual=2;
+                meio=i;
+            }
+        }
+        else if(sequencia[i]=='*'){
+            if(Prioridadeatual<1){
+                Prioridadeatual=1;
+                meio=i;
+            }
+        }
+        else if(sequencia[i]=='+'){
+            Prioridadeatual=3;
+            meio=i;
+        }
+        i++;
+
+    }
+    return meio;
+}
+
+
 
 ///Retorna se a cadeia eh aceita pelo automato
 int reconhece(Automato a,char *sequencia){
@@ -48,10 +338,10 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual){
         }
     }
     retorna_simbolos(a,estado_atual,simbolos_aceitos);
-    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){/*printf("Voltando\n");*/return 0;} ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
+    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0)return 0; ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
     for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
         j=0;
-        if(simbolos_aceitos[i]==sequencia[0] && sequencia[0]!='\0'){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
+        if(simbolos_aceitos[i]==sequencia[0]){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
             estados_destinos = aplicar_funcao_ao_estado(a,estado_atual,sequencia[0],&qtd_destinos);
             do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao
                 if(reconhece_(a,(sequencia+1),estados_destinos[j])==1)return 1;
@@ -337,6 +627,7 @@ int carrega_delta(Automato *a, char *delta) {
 //Retorna 1 se sucesso, 0 se erro
 int carrega_inicial(Automato *a, char *inicial) {
     int i, j;
+    unsigned n;
     for(i = 0; i < (*a)->num_estados; i++) { //Verifica se a palavra existe nos estados do automato
         j = 0;
         while((*a)->estados[i][j] != '\0' && inicial[j] != '\0') { //Equanto a palavra não acabar
@@ -349,7 +640,6 @@ int carrega_inicial(Automato *a, char *inicial) {
             if(inicial[j+1] != '\0')
                 j++;
             else {
-                int n;
                 for(n = 0; n < strlen(inicial); n++) {
                     (*a)->estado_inicial[n] = inicial[n];
                 }
@@ -410,7 +700,7 @@ int carrega_final(Automato *a, char *final) {
 
 //Verifica se o estado pertence ao automato
 int pertence_estado(Automato a, char *estado) {
-    int i;
+    unsigned i;
     for(i = 0; i < a->num_estados; i++) {
         if(!strcmp(a->estados[i], estado))
             return 1;
@@ -419,7 +709,7 @@ int pertence_estado(Automato a, char *estado) {
 }
 
 int pertence_alfabeto(Automato a, char simbolo) {
-    int i;
+    unsigned i;
     for(i = 0; i < strlen(a->alfabeto); i++) {
         if(a->alfabeto[i] == simbolo)
             return 1;
@@ -429,7 +719,7 @@ int pertence_alfabeto(Automato a, char simbolo) {
 
 //Atribui o valor de b em a
 void atribui(char *a, char *b) {
-    int i;
+    unsigned i;
     for(i = 0; i < strlen(b); i++) {
         a[i] = b[i];
         a[i+1] = '\0';

@@ -26,16 +26,19 @@
 #endif
 
 int main() {
-  char cadeia[200],repete='s';
-  int reconheceu;
-  char arquivo[30];
-  do{
-    clear();
-    printf(COLOR_LIGH_YELLOW"Arquivo de entrada do automato: ");
-    scanf("%s", arquivo);
-    printf(COLOR_RESET);
-    Automato a = carrega_automato(arquivo);
-    if(a == NULL) return 0;
+    char cadeia[200],repete='s';
+    int reconheceu,opcao;
+    Automato a;
+    printf("1 - Ler de arquivo\n2 - Ler expressao regular\n3 - SAIR\nEscolha uma opcao: ");
+    scanf("%d",&opcao);
+    if(opcao==1)a = carrega_automato("Automato05.dat");
+    else if(opcao==2){
+        char sequencia[100];
+        printf("Digite a expressao regular: \n");
+        scanf("%s",sequencia);
+        a = trataSeq(sequencia);
+        //mostrarAutomato(a);
+    }else return 1;
     while(repete=='s'){
       printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o automato a reconhece: ");
       scanf("%s",cadeia);

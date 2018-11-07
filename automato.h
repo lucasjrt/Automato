@@ -21,4 +21,24 @@ int reconhece_(Automato a,char *sequencia,char *estado_atual);
 int reconhece(Automato a,char *sequencia);
 char **aplicar_funcao_ao_estado(Automato a, char *estado, char simbolo, int *qtd_destinos);
 
-#endif //DEFINED_AUTOMATO_H
+
+int retornaMeio(char *sequencia);
+Automato trataSeq(char *sequencia);
+int iniciaAutomato(Automato *a);
+void trataSeq_(Automato a, char *sequencia, char *inicioR, char *fimR);
+void trataFechamento(Automato a, char *r1, char *inicioR, char *fimR);
+void trataConcatenacao(Automato a, char *r1, char *r2, char *inicioR, char *fimR);
+void trataUniao(Automato a, char *r1, char *r2, char *inicioR, char *fimR);
+int ehSimbolo(char *sequencia);
+void insereEstado(Automato a, char *estado);
+void insereTransicao(Automato a, char *origem, char *destino, char transicao);
+void trataParenteses(char *sequencia);
+void mostrarAutomato(Automato a);
+int possuiAlfabeto(Automato a, char caracter,int tam);
+void insereEstadoFinal(Automato a,char *estado);
+void insereEstadoInicial(Automato a, char *estado);
+void preencheAlfabeto(Automato a,char *sequencia);
+void inserePonto(char *sequencia);
+int possuiAlfabeto(Automato a, char caracter,int tam);
+
+#endif //
