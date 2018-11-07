@@ -5,12 +5,14 @@
   #define COLOR_RED         "\e[91m"
   #define COLOR_GREEN       "\e[32m"
   #define COLOR_LIGH_YELLOW "\e[93m"
+  #define COLOR_BLUE        "\e[96m"
   #define COLOR_RESET       "\e[0m"
   #define itoa(x, y, z)     itoal(x, y)
 #elif defined(_WIN32) || defined(WIN32)
   #define COLOR_RED     ""
   #define COLOR_GREEN   ""
   #define COLOR_RESET   ""
+  #define COLOR_BLUE    ""
 #endif
 
 struct delta {
@@ -20,10 +22,10 @@ struct delta {
 };
 
 struct automato {
-    char estados[150][15];
+    char estados[350][15];
     int num_estados;
     char alfabeto[36];
-    struct delta funcoes[150];
+    struct delta funcoes[300];
     int num_funcoes;
     char estado_inicial[15];
     char estado_final[30][15];
@@ -172,9 +174,9 @@ void trataFechamento(Automato a, char *r1, char *inicioR, char *fimR){
 
 void mostrarAutomato(Automato a){
     int i;
-    printf("Estados:\n");
+    printf(COLOR_BLUE"Estados:\n{");
     for(i=0;i<a->num_estados;i++){
-        printf("%s\n",a->estados[i]);
+        printf("%s%s",a->estados[i], i < a->num_estados - 1 ? ", " : "}\n");
     }
     printf("Numero de estados: %d\n",a->num_estados);
     printf("Alfabeto:\n%s\n",a->alfabeto);
@@ -188,6 +190,7 @@ void mostrarAutomato(Automato a){
     for(i=0;i<a->num_final;i++){
         printf("%s\n",a->estado_final[i]);
     }
+    printf(COLOR_RESET);
 }
 
 void trataParenteses(char *sequencia){
@@ -233,7 +236,7 @@ void insereEstadoInicial(Automato a, char *estado){
 void preencheAlfabeto(Automato a,char *sequencia){
     int i,j=0;
     for(i=0;i<strlen(sequencia);i++){
-        if(possuiAlfabeto(a,sequencia[i],j)==0&&sequencia[i]!='+'&&sequencia[i]!='.'&&sequencia[i]!='*'&&sequencia[i]!='('&&sequencia[i]!=')'){
+        if(possuiAlfabeto(a,sequencia[i],j)==0&&sequencia[i]!='+'&&sequencia[i]!='.'&&sequencia[i]!='*'&&sequencia[i]!='('&&sequencia[i]!=')' && sequencia[i] != 'E'){
             a->alfabeto[j]=sequencia[i];
             j++;
         }

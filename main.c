@@ -26,32 +26,38 @@
 #endif
 
 int main() {
-    char cadeia[200],repete='s';
+    char cadeia[200],repete='s', imprimir;
     int reconheceu,opcao;
     Automato a;
     do{
+      repete = 0;
       clear();
       printf(COLOR_LIGH_YELLOW"1 - Ler de arquivo\n2 - Ler expressao regular\n3 - SAIR\nEscolha uma opcao: ");
       scanf("%d",&opcao);
       if(opcao==1)a = carrega_automato("Automato05.dat");
       else if(opcao==2){
-          char sequencia[100];
+          char sequencia[300];
           printf(COLOR_LIGH_YELLOW"Digite a expressao regular: \n");
           scanf("%s",sequencia);
-          printf(COLOR_RESET);
           a = trataSeq(sequencia);
-          //mostrarAutomato(a);
+          printf("Imprimir automato? (s/n): ");
+          limpar_buffer();
+          scanf("%c", &imprimir);
+          if(imprimir == 's')
+              mostrarAutomato(a);
+          printf(COLOR_RESET);
       }else return 1;
-      while(repete=='s'){
+      while(repete!='n'){
         printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o automato a reconhece: ");
         scanf("%s",cadeia);
         printf(COLOR_RESET);
         reconheceu = reconhece(a,cadeia);
         if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
         else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
-        printf(COLOR_LIGH_YELLOW"Quer analisar outra sequencia (s/n)? "COLOR_RESET);
+        printf(COLOR_LIGH_YELLOW"Analisar outra sequencia com essa expressao? (s/n): ");
         limpar_buffer();
         scanf("%c",&repete);
+        printf(COLOR_RESET);
       }
       printf(COLOR_LIGH_YELLOW"Ir para o menu? (s/n):"COLOR_RESET);
       limpar_buffer();
