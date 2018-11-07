@@ -194,7 +194,10 @@ void mostrarAutomato(Automato a){
     }
     printf("Numero de funcoes: %d\n",a->num_funcoes);
     printf("Estado inicial: %s\n",a->estado_inicial);
-    printf("Estados finais:\n");
+    if(a->num_final > 1)
+      printf("Estados finais: ");
+    else
+      printf("Estado final: ");
     for(i=0;i<a->num_final;i++){
         printf("%s\n",a->estado_final[i]);
     }
