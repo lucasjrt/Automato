@@ -26,47 +26,69 @@
 #endif
 
 int main() {
-    char cadeia[200],repete='s', imprimir;
+    char cadeia[200],repete='s', imprimir, arquivo[50];
     int reconheceu,opcao;
     Automato a;
     do{
       repete = 0;
       clear();
-      printf(COLOR_LIGH_YELLOW"1 - Ler de arquivo\n2 - Ler expressao regular\n3 - SAIR\nEscolha uma opcao: ");
+      printf(COLOR_LIGH_YELLOW"1 - Ler de arquivo\n2 - Ler expressão regular\n0 - Sair\nEscolha uma opção: ");
       scanf("%d",&opcao);
-      if(opcao==1)a = carrega_automato("Automato05.dat");
+      if(opcao==1) {
+        do{
+          printf(COLOR_LIGH_YELLOW"Nome do arquivo: ");
+          limpar_buffer();
+          scanf("%s", arquivo);
+          printf(COLOR_RESET);
+          a = carrega_automato(arquivo);
+        } while(a == NULL);
+      }
       else if(opcao==2){
           char sequencia[300];
-          printf(COLOR_LIGH_YELLOW"Digite a expressao regular: \n");
+          printf(COLOR_LIGH_YELLOW"Digite a expressão regular: \n");
           scanf("%s",sequencia);
           a = trataSeq(sequencia);
-          printf("Imprimir automato? (s/n): ");
+          printf("Imprimir autômato? (s/n): ");
           limpar_buffer();
           scanf("%c", &imprimir);
           if(imprimir == 's')
               mostrarAutomato(a);
           printf(COLOR_RESET);
-      }else return 1;
+      }else if(opcao == 0) {
+        clear();
+        printf(COLOR_BLUE "Fim da apresentação!!!\n");
+        printf("Integrantes do grupo:\n");
+        printf("\tBreno Corrêa\n");
+        printf("\tLucas Justino\n");
+        printf("\tTarcisio Junio\n"COLOR_RESET);
+        limpar_buffer();
+        getchar();
+        return 0;
+      }
+      else {
+        printf("Opcao invalida, saindo...\n");
+        return 0;
+      }
       while(repete!='n'){
-        printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o automato a reconhece: ");
+        printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o autômato a reconhece: ");
         scanf("%s",cadeia);
         printf(COLOR_RESET);
         reconheceu = reconhece(a,cadeia);
         if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
-        else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
-        printf(COLOR_LIGH_YELLOW"Analisar outra sequencia com essa expressao? (s/n): ");
+        else printf(COLOR_RED"Não aceita\n"COLOR_RESET);
+        printf(COLOR_LIGH_YELLOW"Analisar outra sequência com essa expressão? (s/n): ");
         limpar_buffer();
         scanf("%c",&repete);
         printf(COLOR_RESET);
       }
-      printf(COLOR_LIGH_YELLOW"Ir para o menu? (s/n):"COLOR_RESET);
+      printf(COLOR_LIGH_YELLOW"Voltar para o menu? (s/n):"COLOR_RESET);
       limpar_buffer();
       scanf("%c", &repete);
     } while(repete!='n');
   clear();
-  printf(COLOR_BLUE "Fim da apresentacao!!!\n");
+  printf(COLOR_BLUE "Fim da apresentação!!!\n");
   printf("Integrantes do grupo:\n");
-  printf("\tBreno Correa\n");
+  printf("\tBreno Corrêa\n");
   printf("\tLucas Justino\n");
   printf("\tTarcisio Junio\n"COLOR_RESET);
   limpar_buffer();

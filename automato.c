@@ -32,7 +32,7 @@ struct automato {
     int num_final;
 };
 
-Automato trataSeq(char *sequencia){
+Automato trataSeq(char *sequencia){ //Retorna a estrutura do automato preenchida
     char inicio[15],fim[15];
     Automato a;
     iniciaAutomato(&a);
@@ -45,14 +45,13 @@ Automato trataSeq(char *sequencia){
         insereEstado(a,fim);
         insereTransicao(a,inicio,fim,'&');
     }
-    else
-        trataSeq_(a,sequencia,inicio,fim);
+    else trataSeq_(a,sequencia,inicio,fim);
     insereEstadoInicial(a,inicio);
     insereEstadoFinal(a,fim);
     return a;
 }
 
-void trataSeq_(Automato a, char *sequencia, char *inicioR, char *fimR){
+void trataSeq_(Automato a, char *sequencia, char *inicioR, char *fimR){ ///Funcao recursiva
     int i;
     char *r1,*r2,inicio[15],fim[15];
     int meio;
@@ -64,7 +63,6 @@ void trataSeq_(Automato a, char *sequencia, char *inicioR, char *fimR){
         insereEstado(a,fim);
         if(sequencia[0]=='E')insereTransicao(a,inicio,fim,'&');
         else insereTransicao(a,inicio,fim,sequencia[0]);
-
     }
     if(sequencia[meio]=='*'){
         r1 = (char*)malloc(strlen(sequencia));
@@ -103,13 +101,11 @@ void trataUniao(Automato a, char *r1, char *r2, char *inicioR, char *fimR){
     if(ehSimbolo(r1)){
         itoa(a->num_estados,inicio,10);
         insereEstado(a,inicio);
-
         itoa(a->num_estados,fim,10);
         insereEstado(a,fim);
         if(r1[0]!='E')insereTransicao(a,inicio,fim,r1[0]);
         else insereTransicao(a,inicio,fim,'&');
     }else trataSeq_(a,r1,inicio,fim);
-
     itoa(a->num_estados,ultimo,10);
     insereEstado(a,ultimo);
     insereTransicao(a,primeiro,inicio,'&');
@@ -123,7 +119,7 @@ void trataUniao(Automato a, char *r1, char *r2, char *inicioR, char *fimR){
         insereEstado(a,fim);
         if(r2[0]!='E')insereTransicao(a,inicio,fim,r2[0]);
         else insereTransicao(a,inicio,fim,'&');
-    }else trataSeq_(a,r2,inicio,fim);
+    } else trataSeq_(a,r2,inicio,fim);
     insereTransicao(a,primeiro,inicio,'&');
     insereTransicao(a,fim,ultimo,'&');
     strcpy(inicioR,primeiro);
@@ -183,42 +179,38 @@ void trataFechamento(Automato a, char *r1, char *inicioR, char *fimR){
 void mostrarAutomato(Automato a){
     int i;
     printf(COLOR_BLUE"Estados:\n{");
-    for(i=0;i<a->num_estados;i++){
+    for(i=0;i<a->num_estados;i++)
         printf("%s%s",a->estados[i], i < a->num_estados - 1 ? ", " : "}\n");
-    }
-    printf("Numero de estados: %d\n",a->num_estados);
+    printf("Número de estados: %d\n",a->num_estados);
     printf("Alfabeto:\n%s\n",a->alfabeto);
-    printf("Funcoes de transicao\n");
-    for(i=0;i<a->num_funcoes;i++){
-        printf("Origem: %s\t Destino: %s\t Transicao: %c\n",a->funcoes[i].estado1,a->funcoes[i].estado2,a->funcoes[i].transicao);
-    }
-    printf("Numero de funcoes: %d\n",a->num_funcoes);
-    printf("Estado inicial: %s\n",a->estado_inicial);
+    printf("Funções de transição\n");
+    for(i=0;i<a->num_funcoes;i++)
+        printf("Origem: %s\t Destino: %s\t Transição: %c\n",a->funcoes[i].estado1,a->funcoes[i].estado2,a->funcoes[i].transicao);
+    printf("Quantidade de funções de transição: %d\n",a->num_funcoes);
+    printf("Estado inicial: \"%s\"\n",a->estado_inicial);
     if(a->num_final > 1)
       printf("Estados finais: ");
     else
       printf("Estado final: ");
-    for(i=0;i<a->num_final;i++){
-        printf("%s\n",a->estado_final[i]);
-    }
+    for(i=0;i<a->num_final;i++)
+        printf("\"%s\"\n",a->estado_final[i]);
     printf(COLOR_RESET);
 }
 
 void trataParenteses(char *sequencia){
     int controle=0,i,tam=strlen(sequencia);
     if(sequencia[0]=='('&&sequencia[tam-1]==')'){
-        for(i=1;i<tam-1;i++){
-            if(controle==0&&sequencia[i]==')'){
+        for(i=1;i<tam-1;i++) {
+            if(controle==0&&sequencia[i]==')')
                 return;
-            }
             else if(sequencia[i]==')')controle--;
             else if(sequencia[i]=='(')controle++;
         }
-        for(i=0;i<tam-1;i++){
+        for(i=0;i<tam-1;i++)
             sequencia[i]=sequencia[i+1];
-        }
         sequencia[tam-2] = '\0';
-    }return;
+    }
+    return;
 }
 
 void insereTransicao(Automato a, char *origem, char *destino, char transicao){
@@ -229,9 +221,7 @@ void insereTransicao(Automato a, char *origem, char *destino, char transicao){
 }
 
 void insereEstado(Automato a, char *estado){
-    //printf("Adicionando %s\n",estado);
     strcpy(a->estados[a->num_estados],estado);
-    //printf("%s adicionado em %d\n",a->estados[a->num_estados],a->num_estados);
     a->num_estados++;
 }
 
@@ -278,9 +268,8 @@ void inserePonto(char *sequencia){
 
 int possuiAlfabeto(Automato a, char caracter,int tam){
     int i;
-    for(i=0;i<tam;i++){
+    for(i=0;i<tam;i++)
         if(a->alfabeto[i]==caracter)return 1;
-    }
     return 0;
 }
 
@@ -300,39 +289,42 @@ int iniciaAutomato(Automato *a){
 int retornaMeio(char *sequencia){
     int i=0, qtdparenteses=0, Prioridadeatual=0, meio=-1;
     trataParenteses(sequencia);
-    while(sequencia[i]!='\0'){
-        if(sequencia[i]=='('){
+    while(sequencia[i]!='\0') {
+        if(sequencia[i]=='(') {
             qtdparenteses = 1;
             i++;
             while(qtdparenteses>0){
-                if(sequencia[i]=='(')qtdparenteses++;
-                else if(sequencia[i]==')')qtdparenteses--;
+                if(sequencia[i]=='(') qtdparenteses++;
+                else if(sequencia[i]==')') qtdparenteses--;
                 i++;
             }
         }
-        if(sequencia[i]=='.'&&i!=0){
+        if(sequencia[i]=='.'&&i!=0) {
             if(Prioridadeatual<2){
                 Prioridadeatual=2;
                 meio=i;
             }
         }
-        else if(sequencia[i]=='*'){
-            if(Prioridadeatual<1){
+        else if(sequencia[i]=='*') {
+            if(Prioridadeatual<1) {
                 Prioridadeatual=1;
                 meio=i;
             }
         }
-        else if(sequencia[i]=='+'){
+        else if(sequencia[i]=='+') {
             Prioridadeatual=3;
             meio=i;
         }
         i++;
-
     }
     return meio;
 }
 
-
+/**********************************************************************************************************************************************************************************************************************/
+/*                                                                                                                                                                                                                    */
+/*                                                                                                     Trabalho 1                                                                                                     */
+/*                                                                                                                                                                                                                    */
+/**********************************************************************************************************************************************************************************************************************/
 
 ///Retorna se a cadeia eh aceita pelo automato
 int reconhece(Automato a,char *sequencia){
