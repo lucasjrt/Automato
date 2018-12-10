@@ -9,10 +9,10 @@
   #define COLOR_RESET       "\e[0m"
   #define itoa(x, y, z)     itoal(x, y)
 #elif defined(_WIN32) || defined(WIN32)
-  #define COLOR_RED     ""
-  #define COLOR_GREEN   ""
-  #define COLOR_RESET   ""
-  #define COLOR_BLUE    ""
+  #define COLOR_RED     " "
+  #define COLOR_GREEN   " "
+  #define COLOR_RESET   " "
+  #define COLOR_BLUE    " "
 #endif
 
 struct delta {
@@ -31,6 +31,308 @@ struct automato {
     char estado_final[30][15];
     int num_final;
 };
+
+struct deltaPilha {
+    char estado1[15];
+    char transicao;
+    char pilhaAntes;
+    char estado2[15];
+    char pilhaDepois[3];
+};
+
+struct automatoPilha {
+    char pilha[500];
+    char estados[350][15];
+    int num_estados;
+    char alfabeto[36];
+    struct deltaPilha funcoes[300];
+    int num_funcoes;
+    char estado_inicial[15];
+    char estado_final[30][15];
+    int num_final;
+    int tamanhoPilha;
+};
+
+int possuiEstadoPilha(AutomatoP a,char simbolo, char *estadoAtual){
+    int i;
+    for(i=0;i<a->num_funcoes;i++){
+        if((strcmp(estadoAtual,a->funcoes[i].estado1)==0)&&a->funcoes[i].transicao==simbolo && a->funcoes[i].pilhaAntes==a->pilha[a->tamanhoPilha-1])return 1;
+    }
+    //printf("Nao pode ir para ")
+    return 0;
+}
+
+int reconhecePilha(AutomatoP a,char *sequencia){
+    if(strcmp("E",sequencia)==0) ///Caso o usuario digite "E", sera interpretado que ele digitou nada, ou seja, cadeia vazia
+        sequencia[0]='\0';
+    return reconhecePilha_(a,sequencia,a->estado_inicial);
+}
+
+///Dado o estado inicial do automato, retorna se a cadeia eh aceita pelo automato
+int reconhecePilha_(AutomatoP a,char *sequencia,char *estado_atual){
+    printf("Sequencia %s\n",sequencia);
+    printf("Esta em %s, vai ler %c e a pilha esta %s\n\n",estado_atual,sequencia[0],a->pilha);
+    int k=0;
+    char temp;
+    char simbolos_aceitos[36],**estados_destinos;
+    int i, qtd_destinos=0,j=0;
+    if(sequencia[0]=='\0'){ ///Se a sequencia acabou
+        if(eh_estado_finalP(a,estado_atual)&&a->pilha[0]=='Z')return 1; ///Se for estado final e a pilha esta vazia entao reconhece
+        else{
+            retorna_simbolosP(a,estado_atual,simbolos_aceitos);
+            if(ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0)return 0; ///Caso a E-transicao nao seja um simbolo aceito por esse estado e sequencia acabou, entao retorna.
+        }
+    }
+    retorna_simbolosP(a,estado_atual,simbolos_aceitos);
+    if(ja_existe(sequencia[0],simbolos_aceitos,strlen(simbolos_aceitos))==0 && ja_existe('&',simbolos_aceitos,strlen(simbolos_aceitos))==0){
+        return 0; ///Se o caractere nao for aceito pelo estado e simbolos aceitos do estado nao tenha E-fecho entao retorna
+    }
+    for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
+        j=0;
+        //printf("Tentando simbolo aceito %c\nSequencia %s\n",simbolos_aceitos[i],sequencia);
+        if(simbolos_aceitos[i]==sequencia[0]){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
+            estados_destinos = aplicar_funcao_ao_estadoP(a,estado_atual,sequencia[0],&qtd_destinos); ///Retorna os estados que pode ir, dado a situacao da pilha atual o estado atual e o simbolo de transicao
+            do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao e pilha compativel
+                for(k=0;k<a->num_funcoes;k++){ ///Procura a funcao de transicao que leva ao estado destino e aplica essa funcao
+                    if(strcmp(a->funcoes[k].estado1,estado_atual)==0 && strcmp(a->funcoes[k].estado2,estados_destinos[j])==0 &&a->funcoes[k].transicao==sequencia[0] && a->funcoes[k].pilhaAntes==a->pilha[a->tamanhoPilha-1]){
+                        if(a->funcoes[k].pilhaDepois[0]==a->funcoes[k].pilhaAntes&&a->funcoes[k].pilhaDepois[1]=='\0'){ ///Caso em que o nao se mexe na pilha, assim so vai para o estado destino e avanca a sequencia
+                            if(reconhecePilha_(a,(sequencia+1),estados_destinos[j])==1)return 1;
+                        }
+                        else{
+                            if(a->funcoes[k].pilhaDepois[0]=='&'){ ///Caso em que se retira um elemento do topo da pilha
+                                a->tamanhoPilha--;
+                                temp=a->pilha[a->tamanhoPilha];
+                                a->pilha[a->tamanhoPilha] = '\0';
+                                if(reconhecePilha_(a,(sequencia+1),estados_destinos[j])==1)return 1;
+                                ///Caso falhe, deve-se empilhar de volta o valor antigo
+                                a->pilha[a->tamanhoPilha] = temp;
+                                a->tamanhoPilha++;
+                                a->pilha[a->tamanhoPilha+1] = '\0';
+                            }
+                            else{ ///Caso em que se empilha um elemento na pilha
+                                a->pilha[a->tamanhoPilha] = a->funcoes[k].pilhaDepois[0];
+                                a->tamanhoPilha++;
+                                a->pilha[a->tamanhoPilha] = '\0';
+                                if(reconhecePilha_(a,(sequencia+1),estados_destinos[j])==1)return 1;
+                                ///Falhou, entao deve-se retirar o elemento que foi empilhado
+                                a->tamanhoPilha--;
+                                a->pilha[a->tamanhoPilha]='\0';
+
+                            }
+                        }
+                        ///Como ja encontrou a funcao deste estado destino, entao pode parar de procurar
+                        break;
+                    }
+                }
+                j++;
+            }while(j<qtd_destinos);
+        }
+        else{
+            if(simbolos_aceitos[i]=='&'){ ///Caso o estado aceite E-transicao
+                estados_destinos = aplicar_funcao_ao_estadoP(a,estado_atual,'&',&qtd_destinos); ///Retorna os estados que pode ir, dado a situacao da pilha atual o estado atual e o simbolo de transicao
+                do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao e pilha compativel
+                    for(k=0;k<a->num_funcoes;k++){ ///Procura a funcao de transicao que leva ao estado destino e aplica essa funcao
+                        if(strcmp(a->funcoes[k].estado1,estado_atual)==0 && strcmp(a->funcoes[k].estado2,estados_destinos[j])==0 &&a->funcoes[k].transicao=='&' && a->funcoes[k].pilhaAntes==a->pilha[a->tamanhoPilha-1]){
+                            if(a->funcoes[k].pilhaDepois[0]==a->funcoes[k].pilhaAntes&&a->funcoes[k].pilhaDepois[1]=='\0'){ ///Caso em que o nao se mexe na pilha, assim so vai para o estado destino e avanca a sequencia
+                                if(reconhecePilha_(a,sequencia,estados_destinos[j])==1)return 1;
+                            }
+                            else{
+                                if(a->funcoes[k].pilhaDepois[0]=='&'){ ///Caso em que se retira um elemento do topo da pilha
+                                    a->tamanhoPilha--;
+                                    temp=a->pilha[a->tamanhoPilha];
+                                    a->pilha[a->tamanhoPilha] = '\0';
+                                    if(reconhecePilha_(a,(sequencia),estados_destinos[j])==1)return 1;
+                                    ///Caso falhe, deve-se empilhar de volta o valor antigo
+                                    a->pilha[a->tamanhoPilha] = temp;
+                                    a->tamanhoPilha++;
+                                    a->pilha[a->tamanhoPilha+1] = '\0';
+                                }
+                                else{ ///Caso em que se empilha um elemento na pilha
+                                    a->pilha[a->tamanhoPilha] = a->funcoes[k].pilhaDepois[0];
+                                    a->tamanhoPilha++;
+                                    a->pilha[a->tamanhoPilha] = '\0';
+                                    if(reconhecePilha_(a,(sequencia),estados_destinos[j])==1)return 1;
+                                    ///Falhou, entao deve-se retirar o elemento que foi empilhado
+                                    a->tamanhoPilha--;
+                                    a->pilha[a->tamanhoPilha]='\0';
+                                }
+                            }
+                            ///Como ja encontrou a funcao deste estado destino, entao pode parar de procurar
+                            break;
+                        }
+                    }
+                    j++;
+                }while(j<qtd_destinos);
+            }
+        }
+    }
+    return 0;
+}
+
+///Retorna os estados que pode ir, dado a situacao da pilha atual, o estado atual, e o simbolo de transicao
+char **aplicar_funcao_ao_estadoP(AutomatoP a, char *estado, char simbolo, int *qtd_destinos){
+    int i,j=0;*qtd_destinos=0;
+    char **destinos;
+    destinos = (char**)malloc(sizeof(char*)*30);
+    for(int i=0;i<30;i++){
+        destinos[i] = (char*)malloc(sizeof(char)*15);
+    }
+    for(i=0;i<a->num_funcoes;i++){
+        ///Se funcao de transicao tem a origem, simbolo de transicao e situacao da pilha desejados, entao copia o destino dessa funcao de transicao para o vetor de destinos
+        if((strcmp(estado,a->funcoes[i].estado1)==0)&&simbolo==a->funcoes[i].transicao&&(a->pilha[a->tamanhoPilha-1]==a->funcoes[i].pilhaAntes)){
+            (*qtd_destinos)++;
+            strcpy(destinos[j],a->funcoes[i].estado2);
+            j++;
+        }
+    }
+    return destinos;
+}
+
+void retorna_simbolosP(AutomatoP a, char *estado, char *simbolos_possiveis){
+    int i,j=0;
+    simbolos_possiveis[0] = '\0';
+    for(i=0;i<a->num_funcoes;i++){
+        if(strcmp(a->funcoes[i].estado1, estado)==0){
+            if(ja_existe(a->funcoes[i].transicao,simbolos_possiveis,j)==0){
+                simbolos_possiveis[j] =  a->funcoes[i].transicao;
+                j++;
+            }
+        }
+    }
+    simbolos_possiveis[j] = '\0';
+}
+
+
+void automato2(AutomatoP a){
+    insereEstadoP(a,"q0");
+    insereEstadoP(a,"q1");
+    insereEstadoP(a,"q2");
+    insereEstadoInicialP(a,"q0");
+    insereEstadoFinalP(a,"q2");
+    strcpy(a->alfabeto,"&01");
+
+    insereTransicaoP(a,"q0","q0",'1','1',"11");
+    insereTransicaoP(a,"q0","q0",'0','1',"01");
+    insereTransicaoP(a,"q0","q0",'1','0',"10");
+    insereTransicaoP(a,"q0","q0",'0','0',"00");
+    insereTransicaoP(a,"q0","q0",'1','Z',"1Z");
+    insereTransicaoP(a,"q0","q0",'0','Z',"0Z");
+
+    insereTransicaoP(a,"q0","q1",'&','1',"1");
+    insereTransicaoP(a,"q0","q1",'&','0',"0");
+    insereTransicaoP(a,"q0","q1",'&','Z',"Z");
+
+    insereTransicaoP(a,"q1","q1",'1','1',"&");
+    insereTransicaoP(a,"q1","q1",'0','0',"&");
+    insereTransicaoP(a,"q1","q2",'&','Z',"Z");
+
+
+}
+
+void automato1(AutomatoP a){
+    insereEstadoP(a,"q0");
+    insereEstadoInicialP(a,"q0");
+    insereEstadoP(a,"q1");
+    strcpy(a->alfabeto,"01&");
+    insereEstadoP(a,"q2");
+    insereEstadoFinalP(a,"q2");
+    insereTransicaoP(a,"q0","q0",'0','Z',"0Z");
+    insereTransicaoP(a,"q0","q0",'0','0',"00");
+    insereTransicaoP(a,"q0","q1",'&','Z',"Z");
+    insereTransicaoP(a,"q0","q1",'&','0',"0");
+    insereTransicaoP(a,"q1","q1",'1','0',"&");
+    insereTransicaoP(a,"q1","q2",'&','Z',"Z");
+    insereEstadoFinalP(a,"q2");
+}
+
+AutomatoP criaAutomato(){
+    AutomatoP a;
+    a = (AutomatoP) malloc(sizeof(struct automatoPilha));
+    a->tamanhoPilha=1;
+    a->pilha[0] = 'Z';
+    a->pilha[1] = '\0';
+    a->num_funcoes=0;
+    a->num_estados=0;
+    automato2(a);
+    return a;
+}
+
+
+
+void insereEstadoInicialP(AutomatoP a, char *estado){
+    strcpy(a->estado_inicial,estado);
+}
+
+void mostrarAutomatoP(AutomatoP a){
+    int i;
+    printf(COLOR_BLUE"Estados:\n{");
+    for(i=0;i<a->num_estados;i++)
+        printf("%s%s",a->estados[i], i < a->num_estados - 1 ? ", " : "}\n");
+    printf("Numero de estados: %d\n",a->num_estados);
+    printf("Alfabeto:\n%s\n",a->alfabeto);
+    printf("Funcoes de transicao\n");
+    for(i=0;i<a->num_funcoes;i++)
+        printf("Origem: %s\t Destino: %s\t Transicao: %c\n",a->funcoes[i].estado1,a->funcoes[i].estado2,a->funcoes[i].transicao);
+    printf("Quantidade de funcoes de transicao: %d\n",a->num_funcoes);
+    printf("Estado inicial: \"%s\"\n",a->estado_inicial);
+    if(a->num_final > 1)
+      printf("Estados finais: ");
+    else
+      printf("Estado final: ");
+    for(i=0;i<a->num_final;i++)
+        printf("\"%s\"\n",a->estado_final[i]);
+    printf(COLOR_RESET);
+}
+
+int eh_estado_finalP(AutomatoP a,char *estado){
+    int i;
+    for(i=0;i<a->num_final;i++){
+        if(strcmp(a->estado_final[i],estado)==0)return 1;
+    }
+    return 0;
+}
+
+
+void insereTransicaoP(AutomatoP a, const char *origem, const char *destino, const char transicao, const char p_antes, const char *p_depois){
+    strcpy(a->funcoes[a->num_funcoes].estado1,origem);
+    strcpy(a->funcoes[a->num_funcoes].estado2,destino);
+    a->funcoes[a->num_funcoes].transicao = transicao;
+    a->funcoes[a->num_funcoes].pilhaAntes=p_antes;
+    strcpy(a->funcoes[a->num_funcoes].pilhaDepois,p_depois);
+    a->num_funcoes++;
+}
+
+void insereEstadoP(AutomatoP a, const char *estado){
+    strcpy(a->estados[a->num_estados],estado);
+    a->num_estados++;
+}
+
+void insereEstadoFinalP(AutomatoP a,const char *estado){
+    strcpy(a->estado_final[a->num_final],estado);
+    a->num_final++;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Automato trataSeq(char *sequencia){ //Retorna a estrutura do automato preenchida
     char inicio[15],fim[15];

@@ -4,6 +4,7 @@
 #include "automato.h"
 
 typedef struct automato* Automato;
+typedef struct automatoPilha* AutomatoP;
 
 Automato carrega_automato(char *caminho);
 void carrega_estados(Automato *a, char *estados);
@@ -44,4 +45,19 @@ int possuiAlfabeto(Automato a, char caracter,int tam);
 void reverse(char s[]);
 void itoal(int n, char s[]);
 
+
+
+
+int possuiEstadoPilha(AutomatoP a,char simbolo, char *estadoAtual);
+int reconhecePilha(AutomatoP a,char *sequencia);
+int reconhecePilha_(AutomatoP a,char *sequencia,char *estado_atual);
+char **aplicar_funcao_ao_estadoP(AutomatoP a, char *estado, char simbolo, int *qtd_destinos);
+void retorna_simbolosP(AutomatoP a, char *estado, char *simbolos_possiveis);
+AutomatoP criaAutomato();
+int eh_estado_finalP(AutomatoP a,char *estado);
+void insereTransicaoP(AutomatoP a, const char *origem, const char *destino, const char transicao, const char p_antes, const char *p_depois);
+void insereEstadoP(AutomatoP a, const char *estado);
+void insereEstadoFinalP(AutomatoP a,const char *estado);
+void mostrarAutomatoP(AutomatoP a);
+void insereEstadoInicialP(AutomatoP a, char *estado);
 #endif //
