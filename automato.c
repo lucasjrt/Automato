@@ -982,7 +982,7 @@ int carrega_delta(Automato *a, char *delta) {
                 else
                     j++;
                 char temp[15];
-                k = 0;
+                k = 0
                 while(delta[j] != ',') {
                     temp[k] = delta[j];
                     j++;
@@ -1006,7 +1006,9 @@ int carrega_delta(Automato *a, char *delta) {
                 }
                 j+=2;
                 k = 0;
-                while(delta[j] != ')') {
+
+                //while(delta[j] != ')') {
+                while(delta[j] != ',') {
                     temp[k] = delta[j];
                     j++;
                     k++;
@@ -1017,6 +1019,27 @@ int carrega_delta(Automato *a, char *delta) {
                     return 0;
                 }
                 atribui((*a)->funcoes[n].estado2, temp);
+
+                k = 0;
+                while(delta[j] != ',') {
+                    temp[k] = delta[j];
+                    j++;
+                    k++;
+                }
+                temp[k] = '\0';
+
+                (*a)->funcoes[n].pilhaAntes = temp[0];
+
+                k = 0;
+                while(delta[j] != ')') {
+                    temp[k] = delta[j];
+                    j++;
+                    k++;
+                }
+                temp[k] = '\0';
+
+                strcpy((*a)->funcoes[n].pilhaDepois, temp);
+
                 n++;
             }
         }
@@ -1030,6 +1053,13 @@ int carrega_delta(Automato *a, char *delta) {
     }
     (*a)->num_funcoes = n;
     return 1;
+}
+
+int carreg_delta_pilha(Automato *a, char* delta) {
+    if(delta[0] != '{') {
+        printf(COLOR_RED "As funcoes devem estar entre chaves, no seguinte formato: {([estado origem],[caractere do alfabeto],[estado destino]),([estado origem],[caractere do alfabeto],[estado destino]),...}. Note que nao se usa espaco entre cada funcao\n" COLOR_RESET);
+        return 0;
+    }
 }
 
 //Retorna 1 se sucesso, 0 se erro
