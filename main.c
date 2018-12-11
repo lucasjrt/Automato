@@ -16,23 +16,24 @@
   #define clear()           system("clear")
 #elif defined(_WIN32) || defined(WIN32)
   #include <stdio.h>
-  #define COLOR_RED         " "
-  #define COLOR_GREEN       " "
-  #define COLOR_LIGH_YELLOW " "
-  #define COLOR_RESET       " "
-  #define COLOR_BLUE        " "
+  #define COLOR_RED         ""
+  #define COLOR_GREEN       ""
+  #define COLOR_LIGH_YELLOW ""
+  #define COLOR_RESET       ""
+  #define COLOR_BLUE        ""
   #define limpar_buffer()    fflush(stdin)
   #define clear()           system("cls")
 #endif
 
 int main() {
-    //char cadeia[200],repete='s', imprimir, arquivo[50];
-    //int reconheceu,opcao;
-    //Automato a;
-    /*do{
+    char cadeia[200],repete='s', imprimir, arquivo[50];
+    int reconheceu,opcao;
+    Automato a;
+    AutomatoP ap;
+    do{
       repete = 0;
       clear();
-      printf(COLOR_LIGH_YELLOW"1 - Ler de arquivo\n2 - Ler expressao regular\n0 - Sair\nEscolha uma opcao: ");
+      printf(COLOR_LIGH_YELLOW"1 - Ler de arquivo\n2 - Ler expressao regular\n3 - Automato de pilha\n0 - Sair\nEscolha uma opcao: ");
       scanf("%d",&opcao);
       if(opcao==1) {
         do{
@@ -54,7 +55,17 @@ int main() {
           if(imprimir == 's')
               mostrarAutomato(a);
           printf(COLOR_RESET);
-      }else if(opcao == 0) {
+      }
+      else if(opcao==3){
+          char seq[300];
+          int n_Automato;
+          printf("Qual automato deseja ler: ");
+          scanf("%d",&n_Automato);
+          ap = criaAutomato(n_Automato);
+          clear();
+          mostrarAutomatoP(ap);
+      }
+      else if(opcao == 0) {
         clear();
         printf(COLOR_BLUE "Fim da apresentacao!!!\n");
         printf("Integrantes do grupo:\n");
@@ -69,17 +80,33 @@ int main() {
         printf("Opcao invalida, saindo...\n");
         return 0;
       }
-      while(repete!='n'){
-        printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o autômato a reconhece: ");
-        scanf("%s",cadeia);
-        printf(COLOR_RESET);
-        reconheceu = reconhece(a,cadeia);
-        if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
-        else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
-        printf(COLOR_LIGH_YELLOW"Analisar outra sequência com essa expressao? (s/n): ");
-        limpar_buffer();
-        scanf("%c",&repete);
-        printf(COLOR_RESET);
+      if(opcao==1||opcao==2){
+        while(repete!='n'){
+            printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o autômato a reconhece: ");
+            scanf("%s",cadeia);
+            printf(COLOR_RESET);
+            reconheceu = reconhece(a,cadeia);
+            if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
+            else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
+            printf(COLOR_LIGH_YELLOW"Analisar outra sequencia com essa expressao? (s/n): ");
+            limpar_buffer();
+            scanf("%c",&repete);
+            printf(COLOR_RESET);
+        }
+      }
+      else{
+        while(repete!='n'){
+            printf(COLOR_LIGH_YELLOW"Digite a cadeia para verificar se o automato a reconhece: ");
+            scanf("%s",cadeia);
+            printf(COLOR_RESET);
+            reconheceu = reconhecePilha(ap,cadeia);
+            if(reconheceu)printf(COLOR_GREEN"Aceita\n"COLOR_RESET);
+            else printf(COLOR_RED"Nao aceita\n"COLOR_RESET);
+            printf(COLOR_LIGH_YELLOW"Analisar outra sequencia com essa expressao? (s/n): ");
+            limpar_buffer();
+            scanf("%c",&repete);
+            printf(COLOR_RESET);
+        }
       }
       printf(COLOR_LIGH_YELLOW"Voltar para o menu? (s/n):"COLOR_RESET);
       limpar_buffer();
@@ -93,11 +120,4 @@ int main() {
   printf("\tTarcisio Junio\n"COLOR_RESET);
   limpar_buffer();
   scanf("%c", &repete);
-  */
-  AutomatoP a = criaAutomato();
-  char seq[20];
-  mostrarAutomatoP(a);
-  printf("Digite uma sequencia: ");
-  scanf("%s",seq);
-  printf("%d",reconhecePilha(a,seq));
 }

@@ -9,10 +9,10 @@
   #define COLOR_RESET       "\e[0m"
   #define itoa(x, y, z)     itoal(x, y)
 #elif defined(_WIN32) || defined(WIN32)
-  #define COLOR_RED     " "
-  #define COLOR_GREEN   " "
-  #define COLOR_RESET   " "
-  #define COLOR_BLUE    " "
+  #define COLOR_RED     ""
+  #define COLOR_GREEN   ""
+  #define COLOR_RESET   ""
+  #define COLOR_BLUE    ""
 #endif
 
 struct delta {
@@ -53,6 +53,27 @@ struct automatoPilha {
     int tamanhoPilha;
 };
 
+void convertePn_Pf(AutomatoP a){
+    int i,inseriu=0;
+    char estadoN[15];
+    itoa(a->num_estados,estadoN,10);
+    for(i=0;i<a->num_funcoes;i++){
+        if(a->funcoes[i].pilhaAntes=='Z'&&a->funcoes[i].pilhaDepois[0]=='&'&&a->funcoes[i].pilhaDepois[1]=='\0'){
+            printf("Convertendo Pn para PF\n");
+            getchar();
+            getchar();
+            if(inseriu==0){
+                insereEstadoP(a,estadoN);
+                insereEstadoFinalP(a,estadoN);
+                inseriu=1;
+            }
+            a->funcoes[i].pilhaDepois[0]='Z';
+            insereTransicaoP(a,a->funcoes[i].estado2,estadoN,'&','Z',"Z");
+        }
+    }
+
+}
+
 int possuiEstadoPilha(AutomatoP a,char simbolo, char *estadoAtual){
     int i;
     for(i=0;i<a->num_funcoes;i++){
@@ -70,8 +91,6 @@ int reconhecePilha(AutomatoP a,char *sequencia){
 
 ///Dado o estado inicial do automato, retorna se a cadeia eh aceita pelo automato
 int reconhecePilha_(AutomatoP a,char *sequencia,char *estado_atual){
-    printf("Sequencia %s\n",sequencia);
-    printf("Esta em %s, vai ler %c e a pilha esta %s\n\n",estado_atual,sequencia[0],a->pilha);
     int k=0;
     char temp;
     char simbolos_aceitos[36],**estados_destinos;
@@ -89,7 +108,6 @@ int reconhecePilha_(AutomatoP a,char *sequencia,char *estado_atual){
     }
     for(i=0;i<strlen(simbolos_aceitos);i++){ ///Percorre simbolos aceitos pelo estado
         j=0;
-        //printf("Tentando simbolo aceito %c\nSequencia %s\n",simbolos_aceitos[i],sequencia);
         if(simbolos_aceitos[i]==sequencia[0]){ ///Se o caractere da sequencia eh um dos simbolos de transicao deste estado e a sequencia nao esteja vazia
             estados_destinos = aplicar_funcao_ao_estadoP(a,estado_atual,sequencia[0],&qtd_destinos); ///Retorna os estados que pode ir, dado a situacao da pilha atual o estado atual e o simbolo de transicao
             do{ ///Faz passar por todas as funcoes de transicao deste estado com o mesmo simbolo de transicao e pilha compativel
@@ -202,14 +220,90 @@ void retorna_simbolosP(AutomatoP a, char *estado, char *simbolos_possiveis){
     simbolos_possiveis[j] = '\0';
 }
 
+void automato5(AutomatoP a){
+    strcpy(a->alfabeto,"0123&");
+    insereEstadoP(a,"q0");
+    insereEstadoP(a,"q1");
+    insereEstadoP(a,"q2");
+    insereEstadoFinalP(a,"q2");
+    insereEstadoInicialP(a,"q0");
+    insereTransicaoP(a,"q0","q0",'0','Z',"0Z");
+    insereTransicaoP(a,"q0","q0",'0','0',"00");
+    insereTransicaoP(a,"q0","q0",'0','1',"01");
+    insereTransicaoP(a,"q0","q0",'1','Z',"1Z");
+    insereTransicaoP(a,"q0","q0",'1','1',"11");
+    insereTransicaoP(a,"q0","q0",'1','0',"10");
 
-void automato2(AutomatoP a){
+    insereTransicaoP(a,"q0","q1",'&','Z',"Z");
+    insereTransicaoP(a,"q0","q1",'&','0',"0");
+    insereTransicaoP(a,"q0","q1",'&','1',"1");
+
+    insereTransicaoP(a,"q1","q1",'2','0',"&");
+    insereTransicaoP(a,"q1","q1",'2','1',"&");
+    insereTransicaoP(a,"q1","q1",'3','0',"&");
+    insereTransicaoP(a,"q1","q1",'3','1',"&");
+
+    insereTransicaoP(a,"q1","q2",'&','Z',"Z");
+}
+
+void automato4(AutomatoP a){
+    strcpy(a->alfabeto,"01&");
+
+    insereEstadoP(a,"q0");
+    insereEstadoP(a,"q1");
+    insereEstadoP(a,"q2");
+    insereEstadoP(a,"q3");
+    insereEstadoP(a,"q4");
+    insereEstadoFinalP(a,"q4");
+    insereEstadoInicialP(a,"q0");
+    insereTransicaoP(a,"q0","q0",'1','1',"11");
+    insereTransicaoP(a,"q0","q0",'1','Z',"1Z");
+    insereTransicaoP(a,"q0","q1",'0','Z',"Z");
+    insereTransicaoP(a,"q0","q1",'0','1',"1");
+    insereTransicaoP(a,"q0","q2",'1','Z',"Z");
+    insereTransicaoP(a,"q0","q2",'1','1',"1");
+    insereTransicaoP(a,"q1","q3",'1','Z',"Z");
+    insereTransicaoP(a,"q1","q3",'1','1',"1");
+    insereTransicaoP(a,"q2","q3",'0','Z',"Z");
+    insereTransicaoP(a,"q2","q3",'0','1',"1");
+    insereTransicaoP(a,"q3","q3",'0','1',"&");
+    insereTransicaoP(a,"q3","q4",'&','Z',"Z");
+
+}
+
+void automato3(AutomatoP a){
+    insereEstadoP(a,"q0");
+    insereEstadoP(a,"q1");
+    insereEstadoP(a,"q2");
+    insereEstadoInicialP(a,"q0");
+    strcpy(a->alfabeto,"01&");
+
+    insereTransicaoP(a,"q0","q0",'1','1',"11");
+    insereTransicaoP(a,"q0","q0",'0','1',"01");
+    insereTransicaoP(a,"q0","q0",'1','0',"10");
+    insereTransicaoP(a,"q0","q0",'0','0',"00");
+    insereTransicaoP(a,"q0","q0",'1','Z',"1Z");
+    insereTransicaoP(a,"q0","q0",'0','Z',"0Z");
+
+    insereTransicaoP(a,"q0","q1",'&','1',"1");
+    insereTransicaoP(a,"q0","q1",'&','0',"0");
+    insereTransicaoP(a,"q0","q1",'&','Z',"Z");
+
+    insereTransicaoP(a,"q1","q1",'1','1',"&");
+    insereTransicaoP(a,"q1","q1",'0','0',"&");
+    insereTransicaoP(a,"q1","q2",'&','Z',"&");
+
+
+}
+
+
+void automato2(AutomatoP a){ ///(ww^r)
     insereEstadoP(a,"q0");
     insereEstadoP(a,"q1");
     insereEstadoP(a,"q2");
     insereEstadoInicialP(a,"q0");
     insereEstadoFinalP(a,"q2");
-    strcpy(a->alfabeto,"&01");
+    strcpy(a->alfabeto,"01&");
 
     insereTransicaoP(a,"q0","q0",'1','1',"11");
     insereTransicaoP(a,"q0","q0",'0','1',"01");
@@ -229,7 +323,7 @@ void automato2(AutomatoP a){
 
 }
 
-void automato1(AutomatoP a){
+void automato1(AutomatoP a){///(0^n 1^n)
     insereEstadoP(a,"q0");
     insereEstadoInicialP(a,"q0");
     insereEstadoP(a,"q1");
@@ -245,7 +339,7 @@ void automato1(AutomatoP a){
     insereEstadoFinalP(a,"q2");
 }
 
-AutomatoP criaAutomato(){
+AutomatoP criaAutomato(int n){
     AutomatoP a;
     a = (AutomatoP) malloc(sizeof(struct automatoPilha));
     a->tamanhoPilha=1;
@@ -253,7 +347,12 @@ AutomatoP criaAutomato(){
     a->pilha[1] = '\0';
     a->num_funcoes=0;
     a->num_estados=0;
-    automato2(a);
+    if(n==1)automato1(a);
+    if(n==2)automato2(a);
+    if(n==3)automato3(a);
+    if(n==4)automato4(a);
+    if(n==5)automato5(a);
+    convertePn_Pf(a);
     return a;
 }
 
@@ -272,7 +371,7 @@ void mostrarAutomatoP(AutomatoP a){
     printf("Alfabeto:\n%s\n",a->alfabeto);
     printf("Funcoes de transicao\n");
     for(i=0;i<a->num_funcoes;i++)
-        printf("Origem: %s\t Destino: %s\t Transicao: %c\n",a->funcoes[i].estado1,a->funcoes[i].estado2,a->funcoes[i].transicao);
+        printf("Origem: %s\t Destino: %s\t Transicao: %c\t Topo Pilha: %c\t Pilha Depois: %s\n",a->funcoes[i].estado1,a->funcoes[i].estado2,a->funcoes[i].transicao,a->funcoes[i].pilhaAntes,a->funcoes[i].pilhaDepois);
     printf("Quantidade de funcoes de transicao: %d\n",a->num_funcoes);
     printf("Estado inicial: \"%s\"\n",a->estado_inicial);
     if(a->num_final > 1)
