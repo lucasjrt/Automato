@@ -26,7 +26,7 @@
 #endif
 
 int main() {
-    char cadeia[200],repete='s', imprimir, arquivo[50];
+    char cadeia[200],repete='s', imprimir, arquivo[100];
     int reconheceu,opcao;
     Automato a;
     AutomatoP ap;
@@ -57,11 +57,11 @@ int main() {
           printf(COLOR_RESET);
       }
       else if(opcao==3){
-          char seq[300];
           int n_Automato;
           printf("Qual automato deseja ler: ");
-          scanf("%d",&n_Automato);
-          ap = criaAutomato(n_Automato);
+          scanf("%s",arquivo);
+
+          ap = carrega_automatoP(arquivo);
           clear();
           mostrarAutomatoP(ap);
       }

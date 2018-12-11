@@ -220,7 +220,7 @@ void retorna_simbolosP(AutomatoP a, char *estado, char *simbolos_possiveis){
     simbolos_possiveis[j] = '\0';
 }
 
-void automato5(AutomatoP a){
+void automato5(AutomatoP a){ ///(0+1)^n (2+3)^n
     strcpy(a->alfabeto,"0123&");
     insereEstadoP(a,"q0");
     insereEstadoP(a,"q1");
@@ -246,7 +246,7 @@ void automato5(AutomatoP a){
     insereTransicaoP(a,"q1","q2",'&','Z',"Z");
 }
 
-void automato4(AutomatoP a){
+void automato4(AutomatoP a){ /// 1^n (01+10) 0^n
     strcpy(a->alfabeto,"01&");
 
     insereEstadoP(a,"q0");
@@ -258,8 +258,10 @@ void automato4(AutomatoP a){
     insereEstadoInicialP(a,"q0");
     insereTransicaoP(a,"q0","q0",'1','1',"11");
     insereTransicaoP(a,"q0","q0",'1','Z',"1Z");
+
     insereTransicaoP(a,"q0","q1",'0','Z',"Z");
     insereTransicaoP(a,"q0","q1",'0','1',"1");
+
     insereTransicaoP(a,"q0","q2",'1','Z',"Z");
     insereTransicaoP(a,"q0","q2",'1','1',"1");
     insereTransicaoP(a,"q1","q3",'1','Z',"Z");
@@ -339,7 +341,7 @@ void automato1(AutomatoP a){///(0^n 1^n)
     insereEstadoFinalP(a,"q2");
 }
 
-AutomatoP criaAutomato(int n){
+AutomatoP criaAutomato(char *file){
     AutomatoP a;
     a = (AutomatoP) malloc(sizeof(struct automatoPilha));
     a->tamanhoPilha=1;
@@ -347,12 +349,7 @@ AutomatoP criaAutomato(int n){
     a->pilha[1] = '\0';
     a->num_funcoes=0;
     a->num_estados=0;
-    if(n==1)automato1(a);
-    if(n==2)automato2(a);
-    if(n==3)automato3(a);
-    if(n==4)automato4(a);
-    if(n==5)automato5(a);
-    convertePn_Pf(a);
+    carrega_automatoP(file);
     return a;
 }
 
@@ -977,6 +974,7 @@ AutomatoP carrega_automatoP(char* caminho) {
         fscanf(f, "%s", temp); //Lê as funções delta
         if(!carrega_deltaP(&a, temp)) {
             printf(COLOR_RED "Erro na leitura das funcoes do automato\n" COLOR_RESET);
+            getchar();
             return NULL;
         }
         printf(COLOR_GREEN "%d funcoes carregadas:\n" COLOR_RESET, a->num_funcoes);
@@ -1034,6 +1032,8 @@ AutomatoP carrega_automatoP(char* caminho) {
     }
     a->pilha[0] = 'Z';
     a->pilha[1] = '\0';
+    a->tamanhoPilha=1;
+    convertePn_Pf(a);
     return a;
 }
 
@@ -1237,7 +1237,7 @@ int carrega_deltaP(AutomatoP *a, char *delta) {
                 }
                 atribui((*a)->funcoes[n].estado2, temp);
 
-
+                j++;
                 k = 0;
                 while(delta[j] != ',') {
                     temp[k] = delta[j];
@@ -1249,6 +1249,7 @@ int carrega_deltaP(AutomatoP *a, char *delta) {
                 (*a)->funcoes[n].pilhaAntes = temp[0];
 
                 k = 0;
+                j++;
                 while(delta[j] != ')') {
                     temp[k] = delta[j];
                     j++;
