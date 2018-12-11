@@ -982,7 +982,7 @@ int carrega_delta(Automato *a, char *delta) {
                 else
                     j++;
                 char temp[15];
-                k = 0
+                k = 0;
                 while(delta[j] != ',') {
                     temp[k] = delta[j];
                     j++;
@@ -1007,8 +1007,7 @@ int carrega_delta(Automato *a, char *delta) {
                 j+=2;
                 k = 0;
 
-                //while(delta[j] != ')') {
-                while(delta[j] != ',') {
+                while(delta[j] != ')') {
                     temp[k] = delta[j];
                     j++;
                     k++;
@@ -1018,7 +1017,81 @@ int carrega_delta(Automato *a, char *delta) {
                     printf(COLOR_RED "Estado 2: O estado %s nao pertence ao automato\n" COLOR_RESET, temp);
                     return 0;
                 }
+
                 atribui((*a)->funcoes[n].estado2, temp);
+
+                n++;
+            }
+        }
+        else {
+            j++;
+        }
+    }
+    if(delta[j-1] != '}') {
+        printf(COLOR_RED "As funcoes devem estar entre chaves no arquivo\n" COLOR_RESET);
+        return 0;
+    }
+    (*a)->num_funcoes = n;
+    return 1;
+}
+
+//Retorna 1 se sucesso, 0 se erro
+int carrega_deltaP(AutomatoP *a, char *delta) {
+    if(delta[0] != '{') {
+        printf(COLOR_RED "As funcoes devem estar entre chaves, no seguinte formato: {([estado origem],[caractere do alfabeto],[estado destino]),([estado origem],[caractere do alfabeto],[estado destino]),...}. Note que nao se usa espaco entre cada funcao\n" COLOR_RESET);
+        return 0;
+    }
+    int j = 1, k, n = 0;
+    //j: percorre delta
+    //k: percorre o vetor temp
+    while(delta[j] != '\0') { //Percorre todo o vetor delta
+        if(delta[j] == '(') {
+            while(delta[j] != ')') { //Percorre cada tupla
+                if(delta[j] != '(') {
+                    printf(COLOR_RED "Formato invalido das funcoes no arquivo\n" COLOR_RESET);
+                    return 0;
+                }
+                else
+                    j++;
+                char temp[15];
+                k = 0;
+                while(delta[j] != ',') {
+                    temp[k] = delta[j];
+                    j++;
+                    k++;
+                }
+                temp[k]='\0';
+                if(!pertence_estadoP(*a, temp)) {
+                    printf(COLOR_RED "Estado 1: O estado nao %s pertence ao automato\n" COLOR_RESET, temp);
+                    return 0;
+                }
+                atribui((*a)->funcoes[n].estado1, temp);
+                j++;
+                if(!pertence_alfabetoP(*a, delta[j])) {
+                    printf(COLOR_RED "O simbolo de transicao deve fazer parte do alfabeto do automato, \"%c\" nao pertence ao alfabeto\n" COLOR_RESET, delta[j]);
+                    return 0;
+                }
+                (*a)->funcoes[n].transicao = delta[j];
+                if(delta[j+1] != ',') {
+                    printf(COLOR_RED "O simbolo de transicao deve ser apenas um caractere\n" COLOR_RESET);
+                    return 0;
+                }
+                j+=2;
+                k = 0;
+
+                //while(delta[j] != ')') {
+                while(delta[j] != ',') {
+                    temp[k] = delta[j];
+                    j++;
+                    k++;
+                }
+                temp[k]='\0';
+                if(!pertence_estadoP(*a, temp)) {
+                    printf(COLOR_RED "Estado 2: O estado %s nao pertence ao automato\n" COLOR_RESET, temp);
+                    return 0;
+                }
+                atribui((*a)->funcoes[n].estado2, temp);
+
 
                 k = 0;
                 while(delta[j] != ',') {
@@ -1038,7 +1111,7 @@ int carrega_delta(Automato *a, char *delta) {
                 }
                 temp[k] = '\0';
 
-                strcpy((*a)->funcoes[n].pilhaDepois, temp);
+                atribui((*a)->funcoes[n].pilhaDepois, temp);
 
                 n++;
             }
@@ -1053,13 +1126,6 @@ int carrega_delta(Automato *a, char *delta) {
     }
     (*a)->num_funcoes = n;
     return 1;
-}
-
-int carreg_delta_pilha(Automato *a, char* delta) {
-    if(delta[0] != '{') {
-        printf(COLOR_RED "As funcoes devem estar entre chaves, no seguinte formato: {([estado origem],[caractere do alfabeto],[estado destino]),([estado origem],[caractere do alfabeto],[estado destino]),...}. Note que nao se usa espaco entre cada funcao\n" COLOR_RESET);
-        return 0;
-    }
 }
 
 //Retorna 1 se sucesso, 0 se erro
@@ -1146,7 +1212,26 @@ int pertence_estado(Automato a, char *estado) {
     return 0;
 }
 
+//Verifica se o estado pertence ao automatoP
+int pertence_estadoP(AutomatoP a, char *estado) {
+    unsigned i;
+    for(i = 0; i < a->num_estados; i++) {
+        if(!strcmp(a->estados[i], estado))
+            return 1;
+    }
+    return 0;
+}
+
 int pertence_alfabeto(Automato a, char simbolo) {
+    unsigned i;
+    for(i = 0; i < strlen(a->alfabeto); i++) {
+        if(a->alfabeto[i] == simbolo)
+            return 1;
+    }
+    return 0;
+}
+
+int pertence_alfabetoP(AutomatoP a, char simbolo) {
     unsigned i;
     for(i = 0; i < strlen(a->alfabeto); i++) {
         if(a->alfabeto[i] == simbolo)
