@@ -1008,7 +1008,8 @@ AutomatoP carrega_automatoP(char* caminho) {
     fscanf(f, "%s", temp); // Lê "final"
     //Carrega os estados final do Automato
     if(!strcmp(temp, "final")) {
-        fscanf(f, "%s", temp); //Lê os estados finais
+        if(fscanf(f, "%s", temp)==EOF){} //Lê os estados finais
+        else{
         if(!carrega_finalP(&a, temp))
             return NULL;
         if(a->num_final == 1)
@@ -1024,6 +1025,7 @@ AutomatoP carrega_automatoP(char* caminho) {
             printf("%s%s", a->estado_final[i], (i < a->num_final - 1 ? ", ":""));
           }
           printf("\n");
+        }
         }
     }
     else {
