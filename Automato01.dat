@@ -1,0 +1,10 @@
+estados
+1,2,3
+alfabeto
+a,b,c,&
+delta
+{(1,a,1),(1,b,1),(1,c,1),(1,&,2),(2,a,3)}
+inicial
+1
+final
+3
